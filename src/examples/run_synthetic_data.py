@@ -35,7 +35,6 @@ if __name__ == "__main__":
                                                             batch_size = 64,
                                                             test_batch_size= 64
                                                             )
-    test_loaders = {128: test_loader}
     # the positional encoding will add two positional channels to the input 
     # so if the input starts with two channels, the input will have 4 channels after the positional encoding
     data_processor = data_processor.to(device)
@@ -79,7 +78,7 @@ if __name__ == "__main__":
                     )
 
     trainer.train(train_loader=train_loader,
-                test_loaders=test_loaders,
+                test_loaders={"test":test_loader},
                 optimizer=optimizer,
                 scheduler=scheduler, 
                 regularizer=False, 
@@ -88,7 +87,7 @@ if __name__ == "__main__":
                 )
 
 
-    test_samples = test_loaders[128].dataset
+    test_samples = test_loader.dataset
     index = np.random.randint(0, len(test_samples))
     data = test_samples[index]
     data = data_processor.preprocess(data, batched=False)

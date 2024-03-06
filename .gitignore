@@ -3,3 +3,4 @@ Figures/exploration/
 .vscode/launch.json
 __pycache__/
 WakeFNO.egg-info/
+outputs/
