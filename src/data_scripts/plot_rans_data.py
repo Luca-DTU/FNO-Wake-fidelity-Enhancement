@@ -13,7 +13,7 @@ plt.rcParams["legend.scatterpoints"] = 1
 plt.rcParams["legend.numpoints"] = 1
 
 
-def make_plot(databasename, s, wd, fmt='pdf'):
+def make_plot(databasename, s, wd, figname='ContourPlot.pdf'):
     dataset = xarray.open_dataset(databasename)
     flowvarnames = list(dataset.keys())
     flowvarnames.remove('wt_x')
@@ -34,7 +34,7 @@ def make_plot(databasename, s, wd, fmt='pdf'):
             vmin = vmax * 0.99
         levels = np.linspace(vmin, vmax, 15)
         cs = ax[i].contourf(Xi, Yi, var.T, levels, cmap=cmap, vmax=vmax, vmin=vmin)  # plot flow
-        ax[i].scatter(dataset['wt_x'].interp(s=s, wd=wd), dataset['wt_y'].interp(s=s, wd=wd)) # plot turbines
+        # ax[i].scatter(dataset['wt_x'].interp(s=s, wd=wd), dataset['wt_y'].interp(s=s, wd=wd)) # plot turbines
         ax[i].set_ylim(ax[i].get_ylim()[::-1])
         divider1 = make_axes_locatable(ax[i])
         cax1 = divider1.append_axes("right", size="2.5%", pad=0.05)
@@ -43,16 +43,24 @@ def make_plot(databasename, s, wd, fmt='pdf'):
         ax[i].set_title(flowvarnames[i] + ' [' + dataset.variables[flowvarnames[i]].attrs['units'] + ']')
         ax[i].set_aspect('equal')
     ax[-1].set_xlabel('$x/D$')
-    filename = 'ContourPlot.' + fmt
-    fig.savefig(filename, dpi=600)
+    fig.savefig(figname, dpi=600)
 
+def plot_all():
+    for delta_x in [0.5, 1.0, 2.0, 4.0]:
+        for spacing in [4.0, 8.0]:
+            for wd in np.arange(270, 316, 5):
+                databasename = 'awf_database_%gcD.nc' % delta_x
+                path = 'data/RANS/'
+                databasename = path + databasename
+                make_plot(databasename, spacing, wd, figname='Figures/ContourPlot_%gcD_%g_%g.png' % (delta_x, spacing, wd))
 
 if __name__ == '__main__':
-    n = 4  # Number turbines per side
-    delta_x = 4.0  # Horizontal grid spacing [0.5, 1, 2, 4] in terms of cell per rotor diameter. For example, 4 means a spacing of D/4.
-    databasename = 'awf_database_%gcD.nc' % delta_x
-    path = 'data/RANS/'
-    databasename = path + databasename
-    spacing = 8.0  # Turbine inter spacing [4.0, 8.0] to be plotted
-    wd = 315.0  # Inflow wind direction to be plotted (270-315 with 5 deg interval)
-    make_plot(databasename, spacing, wd)
+    # n = 4  # Number turbines per side
+    # delta_x = 4.0  # Horizontal grid spacing [0.5, 1, 2, 4] in terms of cell per rotor diameter. For example, 4 means a spacing of D/4.
+    # databasename = 'awf_database_%gcD.nc' % delta_x
+    # path = 'data/RANS/'
+    # databasename = path + databasename
+    # spacing = 8.0  # Turbine inter spacing [4.0, 8.0] to be plotted
+    # wd = 270.0  # Inflow wind direction to be plotted (270-315 with 5 deg interval)
+    # make_plot(databasename, spacing, wd, figname='ContourPlot.pdf')
+    plot_all()

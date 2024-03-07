@@ -16,23 +16,21 @@ scheduler:
     gamma: 0.1
 
 train:
-  epochs: 10
-  batch_size: 2
+  epochs: 3
+  batch_size: 64
 
 data_format:
   encode_input: False
-  encode_output: True
+  encode_output: False
   positional_encoding: True
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
 
 data_source:
-  name: rans
+  name: synthetic_data
   train_args:
-    outputs: [U]
-    horizontal_grid_spacing: [1.0]
+    resolution: 32
   test_args:
-    outputs: [U]
-    horizontal_grid_spacing: [2.0]
+    resolution: 64
   evaluate_args:
-    output_names: [U]
+    output_names: [U,V,W]
     plot : True
