@@ -1,5 +1,4 @@
-import numpy as np
-from matplotlib import pyplot as plt
+
 import torch
 from neuralop.models import TFNO
 from neuralop import Trainer
@@ -75,7 +74,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf", config_name="synth_data",version_base=None)
+@hydra.main(config_path="conf", config_name="base",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")
