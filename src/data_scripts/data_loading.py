@@ -4,6 +4,7 @@ import torch
 import pickle
 from matplotlib import pyplot as plt
 import logging
+import hydra
 log = logging.getLogger(__name__)
 
 class DataExtractor():
@@ -29,7 +30,7 @@ class DataExtractor():
                 a.set_xticks([])
                 a.set_yticks([])
             plt.tight_layout()
-            plt.savefig(f"output_{titles[i]}.png")
+            plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/output_{titles[i]}.png")
             plt.show()
 
     def evaluate(self,test_loader, model,data_processor,output_names,losses,plot=True):
@@ -94,12 +95,15 @@ class rans(DataExtractor):
         return x_train, y_train
     
 class synthetic_data(DataExtractor):
-    def extract(self,resolution = 32,path = "data/simulated_data/synth_const_dil.pkl"):
+    def extract(self,resolution = 32,path = "data/simulated_data/synth_const_dil.pkl", multivariate = True):
         with open(path, "rb") as f:
             data = pickle.load(f)
         data = data[resolution]
         x_train = data["x"]
-        y_train = data["y"]
+        if not multivariate:
+            y_train = data["y"][:,1,:,:].reshape(-1,1,resolution,resolution)
+        else:
+            y_train = data["y"]
         x_train = torch.tensor(x_train).float()
         y_train = torch.tensor(y_train).float()
         return x_train, y_train

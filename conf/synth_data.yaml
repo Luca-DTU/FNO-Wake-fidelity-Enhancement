@@ -16,7 +16,7 @@ scheduler:
     gamma: 0.1
 
 train:
-  epochs: 3
+  epochs: 1000
   batch_size: 64
 
 data_format:
@@ -28,9 +28,11 @@ data_format:
 data_source:
   name: synthetic_data
   train_args:
-    resolution: 32
-  test_args:
     resolution: 64
+    multivariate: false
+  test_args:
+    resolution: 128
+    multivariate: false
   evaluate_args:
-    output_names: [U,V,W]
+    output_names: [V]
     plot : True
