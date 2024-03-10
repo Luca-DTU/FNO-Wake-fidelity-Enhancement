@@ -13,6 +13,7 @@ import logging
 log = logging.getLogger(__name__)
 import os 
 import shutil
+torch.manual_seed(42)
 
 
 def main(config):
