@@ -33,7 +33,7 @@ class DataExtractor():
             plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/output_{titles[i]}.png")
             plt.show()
 
-    def evaluate(self,test_loader, model,data_processor,output_names,losses,plot=True):
+    def evaluate_sample(self,test_loader, model,data_processor,output_names,plot=True):
         test_samples = test_loader.dataset
         index = np.random.randint(0, len(test_samples))
         data = test_samples[index]
@@ -50,6 +50,25 @@ class DataExtractor():
         # plot
         if plot:
             self.plot_output(output, y, titles = output_names)
+
+    
+    def evaluate(self,test_loader, model,data_processor,losses,**kwargs):
+        self.evaluate_sample(test_loader, model,data_processor,**kwargs)
+        self.evaluate_all(test_loader, model,data_processor,losses)
+
+
+    def evaluate_all(self,test_loader, model,data_processor,losses):
+        data = test_loader.dataset
+        data = {"x": data.x, "y": data.y}
+        data_processor.train = False
+        data = data_processor.preprocess(data, batched=True)
+        output = model(data["x"])
+        if data_processor.out_normalizer and not data_processor.train:
+            output = data_processor.out_normalizer.inverse_transform(output)
+        y = data["y"]
+        # detach and convert to numpy
+        output = output.detach().cpu().numpy()
+        y = y.detach().cpu().numpy()
         # compute loss
         loss = {}
         output = torch.tensor(output).float()
@@ -58,7 +77,6 @@ class DataExtractor():
             loss[name] = loss_fn(output, y).item()
             log.info(f"Test loss {name}: {loss[name]}")
         return sum(loss.values())
-
 class rans(DataExtractor):    
     def extract_sample(self,dataset, s, wd, inputs, outputs):
         x = [dataset[inp].interp(s=s, wd=wd).data for inp in inputs]
