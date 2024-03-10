@@ -43,8 +43,8 @@ def main(config):
                                     lr=config.adam.lr, 
                                     weight_decay=config.adam.weight_decay)
     scheduler = getattr(torch.optim.lr_scheduler, config.scheduler.name)(optimizer, **config.scheduler.args)
-    l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1])
-    h1loss = H1Loss(d=2,reduce_dims=[0,1])
+    l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
+    h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
     train_loss = h1loss
     eval_losses={'h1': h1loss, 'l2': l2loss}
     class LogLoss(Callback):
@@ -100,8 +100,15 @@ def clean_up_empty_files():
             dir_path = os.path.join(root, dir)
             if os.path.isdir(dir_path):
                 subdirs = os.listdir(dir_path)
-                if len(subdirs) == 2 and "main.log" in subdirs and ".hydra" in subdirs:
+                if len(subdirs) == 0:
                     shutil.rmtree(dir_path)
+                else:
+                    for subdir in subdirs:
+                        subdir_path = os.path.join(dir_path,subdir)
+                        if os.path.isdir(subdir_path):
+                            subsubdirs = os.listdir(subdir_path)
+                            if len(subsubdirs) <= 2 and "main.log" in subsubdirs and ".hydra" in subsubdirs:
+                                shutil.rmtree(subdir_path)
 
 if __name__ == '__main__':
     clean_up_empty_files()
