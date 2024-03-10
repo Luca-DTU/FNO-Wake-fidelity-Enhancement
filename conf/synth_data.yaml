@@ -12,7 +12,7 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [150,500]
+    milestones: [150,500,800]
     gamma: 0.1
 
 train:
@@ -20,7 +20,7 @@ train:
   batch_size: 64
 
 data_format:
-  encode_input: False
+  encode_input: True
   encode_output: False
   positional_encoding: True
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
