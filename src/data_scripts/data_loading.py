@@ -56,7 +56,8 @@ class DataExtractor():
     
     def evaluate(self,test_loader, model,data_processor,losses,**kwargs):
         self.evaluate_sample(test_loader, model,data_processor,**kwargs)
-        self.evaluate_all(test_loader, model,data_processor,losses)
+        test_loss = self.evaluate_all(test_loader, model,data_processor,losses)
+        return test_loss
 
 
     def evaluate_all(self,test_loader, model,data_processor,losses):

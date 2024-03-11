@@ -94,8 +94,7 @@ def my_app(config):
     #     test_loss = 1e10
     return test_loss
 
-def clean_up_empty_files():
-    outputs_folder = "outputs"
+def clean_up_empty_files(outputs_folder = "outputs"):
     for root, dirs, files in os.walk(outputs_folder):
         for dir in dirs:
             dir_path = os.path.join(root, dir)
@@ -112,5 +111,6 @@ def clean_up_empty_files():
                                 shutil.rmtree(subdir_path)
 
 if __name__ == '__main__':
-    clean_up_empty_files()
+    clean_up_empty_files(outputs_folder="outputs")
+    clean_up_empty_files(outputs_folder="multirun")
     my_app()
