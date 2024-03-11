@@ -1,0 +1,57 @@
+defaults:
+  - _self_
+  - override hydra/sweeper: optuna
+TFNO:
+  n_modes: 16
+  hidden_channels: 32
+  projection_channels: 64
+  factorization: 'tucker'
+  rank: 0.42
+
+adam:
+  lr: 0.01
+  weight_decay: 0.00001
+
+scheduler:
+  name : MultiStepLR
+  args:
+    milestones: [150,500,1000]
+    gamma: 0.1
+
+train:
+  epochs: 2000
+  batch_size: 64
+
+data_format:
+  encode_input: True
+  encode_output: False
+  positional_encoding: True
+  grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
+
+data_source:
+  name: synthetic_data
+  train_args:
+    resolution: 64
+    multivariate: false
+  test_args:
+    resolution: 128
+    multivariate: false
+  evaluate_args:
+    output_names: [V]
+    plot : True
+
+hydra:
+  mode : MULTIRUN
+  sweeper:
+    n_trials: 50
+    params:
+      TFNO.n_modes: range(8, 32, 4)
+      TFNO.hidden_channels: range(16, 64, 8)
+      TFNO.projection_channels: range(32, 128, 16)
+      TFNO.rank: range(0.1, 0.9, 0.05)
+      train.batch_size: choice(32, 64, 128, 256)
+      data_format.encode_input: choice(True, False)
+      data_format.encode_output: choice(True, False)
+      data_format.positional_encoding: choice(True, False)
+
+      

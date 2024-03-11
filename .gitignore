@@ -4,3 +4,4 @@ Figures/exploration/
 __pycache__/
 WakeFNO.egg-info/
 outputs/
+multirun/

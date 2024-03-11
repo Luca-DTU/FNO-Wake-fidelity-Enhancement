@@ -37,13 +37,15 @@ class DataExtractor():
         test_samples = test_loader.dataset
         index = np.random.randint(0, len(test_samples))
         data = test_samples[index]
+        data["x"] = data["x"].unsqueeze(0)
+        data["y"] = data["y"].unsqueeze(0)
         data_processor.train = False
         # forward pass
-        data = data_processor.preprocess(data, batched=False)
-        output = model(data["x"].unsqueeze(0))
+        data = data_processor.preprocess(data, batched=True)
+        output = model(data["x"])
         if data_processor.out_normalizer and not data_processor.train:
             output = data_processor.out_normalizer.inverse_transform(output)
-        y = data["y"].unsqueeze(0)
+        y = data["y"]
         # detach and convert to numpy
         output = output.detach().cpu().numpy()
         y = y.detach().cpu().numpy()
