@@ -5,6 +5,7 @@ import pickle
 from matplotlib import pyplot as plt
 import logging
 import hydra
+from tqdm import tqdm
 log = logging.getLogger(__name__)
 
 class DataExtractor():
@@ -81,16 +82,16 @@ class DataExtractor():
             log.info(f"Test loss {name}: {loss[name]}")
         return sum(loss.values())
 class rans(DataExtractor):    
-    def extract_sample(self,dataset, s, wd, inputs, outputs):
-        x = [dataset[inp].interp(s=s, wd=wd).data for inp in inputs]
+    def extract_sample(self,dataset, layout, wd, inputs, outputs):
+        x = [dataset[inp].interp(type=layout, wd=wd).data for inp in inputs]
         x = np.stack(x,0)
-        y = [dataset[out].interp(s=s, wd=wd).data for out in outputs]
+        y = [dataset[out].interp(type=layout, wd=wd).data for out in outputs]
         y = np.stack(y,0)
         return x, y
 
     def extract(self,turbines_per_side = 4, 
                     horizontal_grid_spacing = [0.5,1.0,2.0,4.0],
-                    turbine_interspacing = [4.0,8.0], 
+                    layout_type = np.arange(0,50), 
                     inflow_wind_direction = [315.0],
                     path = 'data/RANS/',
                     inputs = ["A_AWF"],
@@ -101,10 +102,10 @@ class rans(DataExtractor):
             databasename = 'awf_database_%gcD.nc' % horizontal_spacing
             databasename = path + databasename
             dataset = xarray.open_dataset(databasename)
-            for s in turbine_interspacing:
+            for layout in tqdm(layout_type):
                 for wd in inflow_wind_direction:
-                    x, y = self.extract_sample(dataset, s, wd, inputs, outputs)
-                    print(x.shape, y.shape)
+                    x, y = self.extract_sample(dataset, layout, wd, inputs, outputs)
+                    # print(x.shape, y.shape)
                     x_list.append(x)
                     y_list.append(y)
             # close dataset
