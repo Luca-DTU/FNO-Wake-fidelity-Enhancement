@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J testjob
+#BSUB -J FNO
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -30,4 +30,5 @@ nvidia-smi
 # Load the cuda module
 module load cuda/11.6
 
-~/miniconda3/envs/thesis/bin/python main.py hydra/launcher=joblib
+# ~/miniconda3/envs/thesis/bin/python main.py hydra/launcher=joblib
+~/miniconda3/envs/thesis/bin/python main.py 

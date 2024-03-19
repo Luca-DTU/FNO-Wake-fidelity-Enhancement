@@ -110,11 +110,19 @@ class rans(DataExtractor):
                     y_list.append(y)
             # close dataset
             dataset.close()
-        x_train = np.stack(x_list,0)
-        y_train = np.stack(y_list,0)
-        x_train = torch.tensor(x_train).float()
-        y_train = torch.tensor(y_train).float()
-        return x_train, y_train
+        if len(horizontal_grid_spacing) > 1:
+            size_single_spacing = len(x_list)//len(horizontal_grid_spacing)
+            x_list = [np.stack(x_list[i*size_single_spacing:(i+1)*size_single_spacing],0) for i in range(len(horizontal_grid_spacing))]
+            y_list = [np.stack(y_list[i*size_single_spacing:(i+1)*size_single_spacing],0) for i in range(len(horizontal_grid_spacing))]
+            x_list = [torch.tensor(x).float() for x in x_list]
+            y_list = [torch.tensor(y).float() for y in y_list]
+            return x_list, y_list
+        else:
+            x_train = np.stack(x_list,0)
+            y_train = np.stack(y_list,0)
+            x_train = torch.tensor(x_train).float()
+            y_train = torch.tensor(y_train).float()
+            return x_train, y_train
     
 class synthetic_data(DataExtractor):
     def extract(self,resolution = 32,path = "data/simulated_data/synth_const_dil.pkl", multivariate = True):

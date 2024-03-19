@@ -24,7 +24,7 @@ data_format:
   encode_output: False
   positional_encoding: True
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
-
+multi_resolution: False
 data_source:
   name: synthetic_data
   train_args:

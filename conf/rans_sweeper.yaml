@@ -45,7 +45,7 @@ data_source:
   evaluate_args:
     output_names: [U]
     plot : True
-
+multi_resolution: False
 hydra:
   mode : MULTIRUN
   sweeper:

@@ -15,16 +15,16 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [150,500,1000]
+    milestones: [250,1000,2500]
     gamma: 0.1
 
 train:
-  epochs: 2000
-  batch_size: 64
+  epochs: 5000
+  batch_size: 256
 
 data_format:
   encode_input: True
-  encode_output: False
+  encode_output: True
   positional_encoding: True
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
 
@@ -39,19 +39,19 @@ data_source:
   evaluate_args:
     output_names: [V]
     plot : True
-
+multi_resolution: False
 hydra:
   mode : MULTIRUN
   sweeper:
-    n_trials: 50
+    n_trials: 20
     params:
       TFNO.n_modes: range(8, 32, 4)
       TFNO.hidden_channels: range(16, 64, 8)
-      TFNO.projection_channels: range(32, 128, 16)
-      TFNO.rank: range(0.1, 0.9, 0.05)
-      train.batch_size: choice(32, 64, 128, 256)
-      data_format.encode_input: choice(True, False)
-      data_format.encode_output: choice(True, False)
-      data_format.positional_encoding: choice(True, False)
+      TFNO.projection_channels: range(16, 128, 16)
+      TFNO.rank: range(0.3, 0.9, 0.05)
+      train.batch_size: choice(256,512)
+      # data_format.encode_input: choice(True, False)
+      # data_format.encode_output: choice(True, False)
+      # data_format.positional_encoding: choice(True, False)
 
       

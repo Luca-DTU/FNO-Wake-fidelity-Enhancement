@@ -17,7 +17,9 @@ scheduler:
 
 train:
   epochs: 2
-  batch_size: 256
+  batch_size: 64
+
+multi_resolution: True
 
 data_format:
   encode_input: True
@@ -29,13 +31,13 @@ data_source:
   name: rans
   train_args:
     outputs: [U]
-    horizontal_grid_spacing: [1.0]
+    horizontal_grid_spacing: [0.5,1.0,2.0]
     # inflow_wind_direction : [270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0]
     inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
                             300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
   test_args:
     outputs: [U]
-    horizontal_grid_spacing: [2.0]
+    horizontal_grid_spacing: [4.0]
     # inflow_wind_direction : [270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0]
     inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
                             300.0, 303.0, 306.0, 309.0, 312.0, 315.0]

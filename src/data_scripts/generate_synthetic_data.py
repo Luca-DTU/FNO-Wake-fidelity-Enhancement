@@ -72,6 +72,6 @@ if __name__ == "__main__":
     print(f"Number of samples: {n_points}, Dilation: {dilation}")
     input = generate_input_data(N, n_points, plot=True)
     output = true_operator(input, dilation=dilation, plot=True)
-    simple_dataset = generate_dataset(N=[32,64,128],n_samples=[1000,1000,10], dilation_input=[0.05,0.05,0.05])
+    simple_dataset = generate_dataset(N=[32,64,128],n_samples=[10000,10000,10], dilation_input=[0.05,0.05,0.05])
     with open('data/simulated_data/synth_const_dil.pkl', 'wb') as f: 
         pickle.dump(simple_dataset, f)
