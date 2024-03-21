@@ -22,12 +22,8 @@ def main(config):
     x_train, y_train = data_source.extract(**config.data_source.train_args)
     x_test,y_test = data_source.extract(**config.data_source.test_args)
     def model_setup(config,input_channels,out_channels):
-        model = TFNO(n_modes=(config.TFNO.n_modes, config.TFNO.n_modes), 
-                    hidden_channels=config.TFNO.hidden_channels, 
-                    projection_channels=config.TFNO.projection_channels, 
-                    factorization=config.TFNO.factorization,
-                    rank=config.TFNO.rank,
-                    in_channels=input_channels, out_channels=out_channels)
+        model = TFNO(**config.TFNO,
+                     in_channels=input_channels, out_channels=out_channels)
         model = model.to(device)
         optimizer = torch.optim.Adam(model.parameters(), 
                                         lr=config.adam.lr, 
@@ -45,7 +41,7 @@ def main(config):
     if config.multi_resolution:
         train_loader, test_loader, data_processors = data_format_multi_resolution(x_train,y_train,x_test,y_test,
                                                             batch_size = config.train.batch_size,
-                                                            test_batch_size= config.train.batch_size,
+                                                            test_batch_size= config.train.test_batch_size,
                                                             encode_output=config.data_format.encode_output,
                                                             encode_input=config.data_format.encode_input,
                                                             positional_encoding=config.data_format.positional_encoding,
@@ -84,7 +80,7 @@ def main(config):
     else:
         train_loader, test_loader, data_processor = data_format(x_train,y_train,x_test,y_test,
                                                                 batch_size = config.train.batch_size,
-                                                                test_batch_size= config.train.batch_size,
+                                                                test_batch_size= config.train.test_batch_size,
                                                                 encode_output=config.data_format.encode_output,
                                                                 encode_input=config.data_format.encode_input,
                                                                 positional_encoding=config.data_format.positional_encoding,
@@ -119,11 +115,11 @@ def main(config):
         # store model
         torch.save(model.state_dict(), f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/model.pth")
         # evaluate
-        test_loss = data_source.evaluate(test_loader,model, data_processor,losses=eval_losses,**config.data_source.evaluate_args)
+        test_loss = data_source.evaluate(test_loader,model,data_processor,losses=eval_losses,**config.data_source.evaluate_args)
     return test_loss
 
 
-@hydra.main(config_path="conf", config_name="base",version_base=None)
+@hydra.main(config_path="conf", config_name="rans_sweeper",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")

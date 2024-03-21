@@ -62,25 +62,26 @@ class DataExtractor():
 
 
     def evaluate_all(self,test_loader, model,data_processor,losses):
-        data = test_loader.dataset
-        data = {"x": data.x, "y": data.y}
-        data_processor.train = False
-        data = data_processor.preprocess(data, batched=True)
-        output = model(data["x"])
-        if data_processor.out_normalizer and not data_processor.train:
-            output = data_processor.out_normalizer.inverse_transform(output)
-        y = data["y"]
-        # detach and convert to numpy
-        output = output.detach().cpu().numpy()
-        y = y.detach().cpu().numpy()
-        # compute loss
-        loss = {}
-        output = torch.tensor(output).float()
-        y = torch.tensor(y).float()
-        for name, loss_fn in losses.items():
-            loss[name] = loss_fn(output, y).item()
-            log.info(f"Test loss {name}: {loss[name]}")
-        return sum(loss.values())
+        loss_avg = 0
+        for batch in test_loader:
+            data_processor.train = False
+            batch = data_processor.preprocess(batch, batched=True)
+            output = model(batch["x"])
+            if data_processor.out_normalizer and not data_processor.train:
+                output = data_processor.out_normalizer.inverse_transform(output)
+            y = batch["y"]
+            # detach and convert to numpy
+            output = output.detach().cpu().numpy()
+            y = y.detach().cpu().numpy()
+            # compute loss
+            loss = {}
+            output = torch.tensor(output).float()
+            y = torch.tensor(y).float()
+            for name, loss_fn in losses.items():
+                loss[name] = loss_fn(output, y).item()
+                log.info(f"Test loss {name}: {loss[name]}")
+            loss_avg += sum(loss.values())
+        return loss_avg
 class rans(DataExtractor):    
     def extract_sample(self,dataset, layout, wd, inputs, outputs):
         x = [dataset[inp].interp(type=layout, wd=wd).data for inp in inputs]

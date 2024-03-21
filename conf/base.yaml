@@ -1,9 +1,18 @@
 TFNO:
-  n_modes: 16
-  hidden_channels: 32
+  # n_modes: [16,16]
+  n_modes: None
+  hidden_channels: 64
+  lifting_channels: 64
   projection_channels: 64
+  n_layers: 4
+  use_mlp: False
+  preactivation: False
+  fno_skip: 'linear'
   factorization: 'tucker'
-  rank: 0.42
+  rank: 0.8
+  joint_factorization: False
+  domain_padding: None
+
 
 adam:
   lr: 0.01
@@ -12,12 +21,13 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [150,500]
-    gamma: 0.1
+    milestones: [100,200,300,400]
+    gamma: 0.5
 
 train:
-  epochs: 2
-  batch_size: 64
+  epochs: 500
+  batch_size: 256
+  test_batch_size: 64
 
 multi_resolution: True
 
@@ -32,13 +42,13 @@ data_source:
   train_args:
     outputs: [U]
     horizontal_grid_spacing: [0.5,1.0,2.0]
-    # inflow_wind_direction : [270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0]
+    # inflow_wind_direction : [270.0, 290.0, 310.0]
     inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
                             300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
   test_args:
     outputs: [U]
     horizontal_grid_spacing: [4.0]
-    # inflow_wind_direction : [270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0]
+    # inflow_wind_direction : [270.0, 290.0, 310.0]
     inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
                             300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
   evaluate_args:
