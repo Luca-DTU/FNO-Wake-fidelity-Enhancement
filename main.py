@@ -133,7 +133,7 @@ def my_app(config):
         print("JOB FAILED --- EXCEPTION")
         log.error(f"Exception: {e}")
         print("CONFIGURATION")
-        print(f"Running with config: {OmegaConf.to_yaml(config['training'])}")
+        print(f"Running with config: {OmegaConf.to_yaml(config)}")
         print("-----------------------------------")
         test_loss = 1e10
     return test_loss
