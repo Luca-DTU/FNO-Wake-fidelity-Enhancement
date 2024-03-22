@@ -33,6 +33,7 @@ class DataExtractor():
             plt.tight_layout()
             plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/output_{titles[i]}.png")
             plt.show()
+            plt.close()
 
     def evaluate_sample(self,test_loader, model,data_processor,output_names,plot=True):
         test_samples = test_loader.dataset

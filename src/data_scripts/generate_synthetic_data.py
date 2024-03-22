@@ -9,7 +9,13 @@ def generate_input_data(N, n_points, plot = False):
     y = np.random.randint(0, N, n_points)
     base[x, y] = 1
     if plot:
+        plt.figure(figsize=(4, 4))
         plt.imshow(base)
+        # remove ticks
+        plt.xticks([])
+        plt.yticks([])
+        # colorbar
+        plt.colorbar()
         plt.show()
     return base
 
@@ -35,13 +41,21 @@ def true_operator(input_data,dilation= 10, plot = False):
     # normalize channel 1 and 2 to be between -1 and 1
     output = min_max_normalize(output)
     if plot:
-        fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-        ax[0].imshow(output[0])
+        fig, ax = plt.subplots(1, 3, figsize=(12, 4))
+        im = ax[0].imshow(output[0])
         ax[0].set_title("Ux")
-        ax[1].imshow(output[1])
+        fig.colorbar(im, ax=ax[0], orientation='horizontal')
+        im = ax[1].imshow(output[1])
         ax[1].set_title("Uy")
-        ax[2].imshow(output[2])
+        fig.colorbar(im, ax=ax[1], orientation='horizontal')
+        im= ax[2].imshow(output[2])
         ax[2].set_title("Uz")
+        fig.colorbar(im, ax=ax[2], orientation='horizontal')
+        for a in ax:
+            a.set_xticks([])
+            a.set_yticks([])
+        plt.tight_layout()
+
         plt.show()
     return output
 
@@ -67,7 +81,7 @@ def generate_dataset(N: list = [32,64],n_samples: list = [10,10], dilation_input
 
 if __name__ == "__main__":
     N = 64
-    n_points = np.random.randint(1, np.ceil(N/10))
+    n_points = 4
     dilation = 0.05
     print(f"Number of samples: {n_points}, Dilation: {dilation}")
     input = generate_input_data(N, n_points, plot=True)
