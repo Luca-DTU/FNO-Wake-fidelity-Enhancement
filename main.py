@@ -1,4 +1,4 @@
-
+import numpy as np
 import torch
 from neuralop.models import TFNO
 # from neuralop import Trainer
@@ -94,6 +94,7 @@ def main(config):
         out_channels = y_train.shape[1]
         data_processor = data_processor.to(device)
         model, optimizer, scheduler, train_loss, eval_losses = model_setup(config,input_channels,out_channels)
+        log.info(f'\nOur model has {count_model_params(model)} parameters.')
         trainer = Trainer(model=model, n_epochs=config.train.epochs,
                         device=device,
                         data_processor=data_processor,
@@ -119,20 +120,22 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf", config_name="rans_sweeper",version_base=None)
+@hydra.main(config_path="conf", config_name="synth_data_sweeper",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")
-    # try:
-    test_loss = main(config) # the main function should return the test loss to optimize the hyperparameters
-    # except Exception as e:
-    #     print("-----------------------------------")
-    #     print("JOB FAILED --- EXCEPTION")
-    #     log.error(f"Exception: {e}")
-    #     print("CONFIGURATION")
-    #     print(f"Running with config: {OmegaConf.to_yaml(config['training'])}")
-    #     print("-----------------------------------")
-    #     test_loss = 1e10
+    try:
+        test_loss = main(config) # the main function should return the test loss to optimize the hyperparameters
+        if test_loss is None or np.isnan(test_loss):
+            raise ValueError("Test loss is None")
+    except Exception as e:
+        print("-----------------------------------")
+        print("JOB FAILED --- EXCEPTION")
+        log.error(f"Exception: {e}")
+        print("CONFIGURATION")
+        print(f"Running with config: {OmegaConf.to_yaml(config['training'])}")
+        print("-----------------------------------")
+        test_loss = 1e10
     return test_loss
 
 def clean_up_empty_files(outputs_folder = "outputs"):

@@ -126,15 +126,37 @@ class rans(DataExtractor):
             return x_train, y_train
     
 class synthetic_data(DataExtractor):
-    def extract(self,resolution = 32,path = "data/simulated_data/synth_const_dil.pkl", multivariate = True):
+    def extract(self,resolution = 32,path = "data/simulated_data/synth_const_dil.pkl", multivariate = True, reduce = None):
         with open(path, "rb") as f:
             data = pickle.load(f)
-        data = data[resolution]
-        x_train = data["x"]
-        if not multivariate:
-            y_train = data["y"][:,1,:,:].reshape(-1,1,resolution,resolution)
-        else:
-            y_train = data["y"]
-        x_train = torch.tensor(x_train).float()
-        y_train = torch.tensor(y_train).float()
-        return x_train, y_train
+        if isinstance(resolution, int):
+            data = data[resolution]
+            x_train = data["x"]
+            if not multivariate:
+                y_train = data["y"][:,1,:,:].reshape(-1,1,resolution,resolution)
+            else:
+                y_train = data["y"]
+            if reduce is not None:
+                x_train = x_train[:int(len(x_train)*reduce)]
+                y_train = y_train[:int(len(y_train)*reduce)]
+            x_train = torch.tensor(x_train).float()
+            y_train = torch.tensor(y_train).float()
+            return x_train, y_train
+        elif hasattr(resolution, "__iter__"): # check if resolution is iterable
+            x_list = []
+            y_list = []
+            for res in resolution:
+                data_res = data[res]
+                x_train = data_res["x"]
+                if not multivariate:
+                    y_train = data_res["y"][:,1,:,:].reshape(-1,1,res,res)
+                else:
+                    y_train = data_res["y"]
+                if reduce is not None:
+                    x_train = x_train[:int(len(x_train)*reduce)]
+                    y_train = y_train[:int(len(y_train)*reduce)]
+                x_train = torch.tensor(x_train).float()
+                y_train = torch.tensor(y_train).float()
+                x_list.append(x_train)
+                y_list.append(y_train)
+            return x_list, y_list

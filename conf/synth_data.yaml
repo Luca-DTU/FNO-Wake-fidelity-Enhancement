@@ -1,9 +1,16 @@
 TFNO:
-  n_modes: 16
-  hidden_channels: 32
-  projection_channels: 64
+  n_modes: [12,12]
+  hidden_channels: 24
+  # lifting_channels: 256
+  projection_channels: 32
+  n_layers: 4
+  use_mlp: False
+  preactivation: False
+  fno_skip: 'linear'
   factorization: 'tucker'
-  rank: 0.42
+  rank: 0.85
+  joint_factorization: False
+  domain_padding: None
 
 adam:
   lr: 0.01
@@ -12,24 +19,27 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [150,500,800]
-    gamma: 0.1
+    milestones: [100,200,300,400]
+    gamma: 0.5
 
 train:
-  epochs: 1000
+  epochs: 2
   batch_size: 64
+  test_batch_size: 64
 
 data_format:
   encode_input: True
   encode_output: False
   positional_encoding: True
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
-multi_resolution: False
+
+multi_resolution: True
 data_source:
   name: synthetic_data
   train_args:
-    resolution: 64
+    resolution: [32,64]
     multivariate: false
+    reduce: 0.05
   test_args:
     resolution: 128
     multivariate: false
