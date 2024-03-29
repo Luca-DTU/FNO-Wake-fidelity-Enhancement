@@ -16,6 +16,7 @@ import os
 import shutil
 torch.manual_seed(42)
 from neuralop.utils import count_model_params
+import pickle
 
 def main(config):
     data_source = getattr(data_loading, config.data_source.name)()
@@ -77,6 +78,10 @@ def main(config):
         torch.save(model.state_dict(), f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/model.pth")
         # evaluate
         test_loss = data_source.evaluate(test_loader,model, data_processors[-1],losses=eval_losses,**config.data_source.evaluate_args)
+        # store data processors in a pickle file
+        with open(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/data_processors.pkl", 'wb') as f:
+            pickle.dump(data_processors, f)
+
     else:
         train_loader, test_loader, data_processor = data_format(x_train,y_train,x_test,y_test,
                                                                 batch_size = config.train.batch_size,
@@ -117,10 +122,14 @@ def main(config):
         torch.save(model.state_dict(), f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/model.pth")
         # evaluate
         test_loss = data_source.evaluate(test_loader,model,data_processor,losses=eval_losses,**config.data_source.evaluate_args)
+        
+        with open(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/data_processor.pkl", 'wb') as f:
+            pickle.dump(data_processor, f)   
+
     return test_loss
 
 
-@hydra.main(config_path="conf", config_name="synth_data_sweeper",version_base=None)
+@hydra.main(config_path="conf", config_name="synth_data",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")

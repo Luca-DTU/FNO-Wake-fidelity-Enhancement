@@ -108,17 +108,13 @@ def data_format(x_train:torch.tensor,y_train:torch.tensor,x_test:torch.tensor,y_
                 test_batch_size:int = 4,
                 positional_encoding:bool = True
                 ):
-    
     if encode_input:
         if encoding == "channel-wise":
             reduce_dims = list(range(x_train.ndim))
         elif encoding == "pixel-wise":
             reduce_dims = [0]
-
         input_encoder = UnitGaussianNormalizer(dim=reduce_dims)
         input_encoder.fit(x_train)
-        #x_train = input_encoder.transform(x_train)
-        #x_test = input_encoder.transform(x_test.contiguous())
     else:
         input_encoder = None
 
