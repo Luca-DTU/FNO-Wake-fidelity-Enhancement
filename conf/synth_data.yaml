@@ -10,7 +10,6 @@ TFNO:
   factorization: 'tucker'
   rank: 0.85
   joint_factorization: False
-  domain_padding: None
 
 adam:
   lr: 0.01
@@ -19,27 +18,27 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [100,200,300,400]
-    gamma: 0.5
+    milestones: [150,500,1000]
+    gamma: 0.1
 
 train:
-  epochs: 2
-  batch_size: 64
-  test_batch_size: 64
+  epochs: 2000
+  batch_size: 256
+  test_batch_size: 10
 
 data_format:
   encode_input: True
-  encode_output: False
+  encode_output: True
   positional_encoding: True
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
 
-multi_resolution: True
+multi_resolution: False
 data_source:
   name: synthetic_data
   train_args:
-    resolution: [32,64]
+    resolution: 64
     multivariate: false
-    reduce: 0.05
+    reduce: 0.1
   test_args:
     resolution: 128
     multivariate: false

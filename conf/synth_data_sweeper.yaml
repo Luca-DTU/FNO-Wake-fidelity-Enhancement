@@ -1,20 +1,18 @@
 defaults:
   - _self_
-  - override hydra/sweeper: optuna
+  # - override hydra/sweeper: optuna
 TFNO:
   n_modes: [12,12]
-  hidden_channels: 16
+  hidden_channels: 24
   lifting_channels: 256
   projection_channels: 32
   n_layers: 4
-  use_mlp: False
-  preactivation: False
+  use_mlp: True
+  preactivation: True
   fno_skip: 'linear'
   factorization: 'tucker'
   rank: 0.85
-  joint_factorization: False
-  domain_padding: None
-
+  joint_factorization: True
 
 adam:
   lr: 0.01
@@ -23,11 +21,11 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [150,500,1000]
-    gamma: 0.1
+    milestones: [100,200,300,400,500,750]
+    gamma: 0.5
 
 train:
-  epochs: 2000
+  epochs: 1000
   batch_size: 256
   test_batch_size: 250
 
@@ -53,13 +51,8 @@ multi_resolution: False
 hydra:
   mode : MULTIRUN
   sweeper:
-    n_trials: 50
+    # n_trials: 50
     params:
-      TFNO.lifting_channels: range(64, 256, 64)
-      TFNO.n_layers: choice(3,4,5)
-      TFNO.use_mlp: choice(True, False)
-      TFNO.preactivation: choice(True, False)
-      TFNO.fno_skip: choice('linear', 'identity', 'soft-gating')
-      TFNO.joint_factorization: choice(True, False)
+      train.epochs: choice(500,750,1000,10000)
 
       

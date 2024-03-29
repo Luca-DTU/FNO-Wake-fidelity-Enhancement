@@ -10,7 +10,6 @@ TFNO:
   factorization: 'tucker'
   rank: 0.8
   joint_factorization: False
-  domain_padding: None
 
 
 adam:
