@@ -28,6 +28,9 @@ train:
   epochs: 1000
   batch_size: 256
   test_batch_size: 250
+  loss: l2
+  # test_loss: [l2,h1]
+  test_loss:  [l2]
 
 data_format:
   encode_input: True

@@ -31,6 +31,9 @@ train:
   epochs: 500
   batch_size: 256
   test_batch_size: 64
+  loss: l2
+  # test_loss: [l2,h1]
+  test_loss:  [l2]
 
 multi_resolution: True
 

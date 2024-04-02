@@ -1,8 +1,8 @@
 TFNO:
-  n_modes: [12,12]
-  hidden_channels: 24
+  n_modes: [12,8]
+  hidden_channels: 12
   # lifting_channels: 256
-  projection_channels: 32
+  # projection_channels: 256
   n_layers: 4
   use_mlp: False
   preactivation: False
@@ -25,11 +25,14 @@ train:
   epochs: 2000
   batch_size: 256
   test_batch_size: 10
+  loss: l2
+  # test_loss: [l2,h1]
+  test_loss:  [l2]
 
 data_format:
-  encode_input: True
-  encode_output: True
-  positional_encoding: True
+  encode_input: False
+  encode_output: False
+  positional_encoding: False
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
 
 multi_resolution: False
