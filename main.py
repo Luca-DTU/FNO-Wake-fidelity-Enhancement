@@ -32,8 +32,9 @@ def main(config):
         scheduler = getattr(torch.optim.lr_scheduler, config.scheduler.name)(optimizer, **config.scheduler.args)
         l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
         h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
-        train_loss = h1loss
-        eval_losses={'h1': h1loss, 'l2': l2loss}
+        losses = {'l2': l2loss, 'h1': h1loss}
+        train_loss = losses[config.train.loss]
+        eval_losses = {key: losses[key] for key in config.train.test_loss}
         return model, optimizer, scheduler, train_loss, eval_losses
     class LogLoss(Callback):
         def on_epoch_end(self,epoch, train_err, avg_loss):
@@ -129,7 +130,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf", config_name="synth_data",version_base=None)
+@hydra.main(config_path="conf", config_name="rans_single_res",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")
