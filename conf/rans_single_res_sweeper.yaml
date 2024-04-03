@@ -3,9 +3,9 @@ defaults:
   - override hydra/sweeper: optuna
 TFNO:
   n_modes: [32,32]
-  hidden_channels: 32
-  lifting_channels: 256
-  projection_channels: 32
+  hidden_channels: 12
+  lifting_channels: 4
+  projection_channels: 4
   n_layers: 4
   use_mlp: True
   preactivation: True
@@ -16,28 +16,29 @@ TFNO:
 
 
 adam:
-  lr: 0.01
+  lr: 0.001
   weight_decay: 0.00001
 
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [150,500,1000]
-    gamma: 0.1
+    milestones: [100,200,300,400]
+    gamma: 0.5
 
 train:
-  epochs: 2000
+  epochs: 500
   batch_size: 256
-  test_batch_size: 100
-  loss: l2
-  # test_loss: [l2,h1]
-  test_loss:  [l2]
+  test_batch_size: 50
+  loss: h1
+  test_loss: [l2]
+  # test_loss:  [l2]
 
 multi_resolution: False
 
 data_format:
   encode_input: True
   encode_output: True
+  use_rans_encoder: True # if encode output is false this will not be accessed
   positional_encoding: True
   grid_boundaries: [[-1.0, 1.0], [-1.0, 1.0]]
 
@@ -45,13 +46,13 @@ data_source:
   name: rans
   train_args:
     outputs: [U]
-    horizontal_grid_spacing: [2.0]
+    horizontal_grid_spacing: [1.0]
     # inflow_wind_direction : [270.0, 290.0, 310.0]
     inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
                             300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
   test_args:
     outputs: [U]
-    horizontal_grid_spacing: [4.0]
+    horizontal_grid_spacing: [2.0]
     # inflow_wind_direction : [270.0, 290.0, 310.0]
     inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
                             300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
@@ -62,9 +63,13 @@ data_source:
 hydra:
   mode : MULTIRUN
   sweeper:
-    n_trials: 12
+    n_trials: 50
     params:
-      data_format.encode_input: choice(True, False)
-      data_format.encode_output: choice(True, False)
-      data_format.positional_encoding: choice(True, False)
-      TFNO.n_modes: choice([16,16], [32,32], [48,48])
+      TFNO.hidden_channels: choice(4,8,12,16,24,32)
+      TFNO.lifting_channels: choice(2,4,6,8,12,16,24,32)
+      TFNO.projection_channels: choice(2,4,6,8,12,16,24,32)
+      TFNO.rank: choice(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0)
+      TFNO.n_layers: choice(2,3,4,5)
+      train.loss: choice(l2,h1)
+      data_format.encode_output: choice(True,False)
+

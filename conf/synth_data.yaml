@@ -22,7 +22,7 @@ scheduler:
     gamma: 0.1
 
 train:
-  epochs: 2000
+  epochs: 2
   batch_size: 256
   test_batch_size: 10
   loss: l2
@@ -31,7 +31,8 @@ train:
 
 data_format:
   encode_input: False
-  encode_output: False
+  encode_output: True
+  use_rans_encoder: True
   positional_encoding: False
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
 

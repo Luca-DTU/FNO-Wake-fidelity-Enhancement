@@ -48,6 +48,7 @@ def main(config):
                                                             encode_input=config.data_format.encode_input,
                                                             positional_encoding=config.data_format.positional_encoding,
                                                             grid_boundaries=config.data_format.grid_boundaries,
+                                                            use_rans_encoder=config.data_format.use_rans_encoder
                                                             )
         if config.data_format.positional_encoding:
             input_channels = x_train[0].shape[1]+2
@@ -91,6 +92,7 @@ def main(config):
                                                                 encode_input=config.data_format.encode_input,
                                                                 positional_encoding=config.data_format.positional_encoding,
                                                                 grid_boundaries=config.data_format.grid_boundaries,
+                                                                use_rans_encoder=config.data_format.use_rans_encoder
                                                                 )
     
         if config.data_format.positional_encoding:
@@ -130,7 +132,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf", config_name="rans_single_res",version_base=None)
+@hydra.main(config_path="conf", config_name="rans_single_res_sweeper",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")

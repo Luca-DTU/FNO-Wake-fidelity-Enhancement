@@ -1,6 +1,6 @@
 from neuralop.datasets.output_encoder import UnitGaussianNormalizer
 from neuralop.datasets.tensor_dataset import TensorDataset
-from neuralop.datasets.transforms import PositionalEmbedding2D
+from neuralop.datasets.transforms import PositionalEmbedding2D, Transform
 from neuralop.datasets.data_transforms import DefaultDataProcessor
 import torch
 from torch.utils.data.dataset import Dataset
@@ -34,7 +34,8 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
                 grid_boundaries:tuple = [[-0.5, 0.5], [-0.5, 0.5]],
                 batch_size:int = 4,
                 test_batch_size:int = 4,
-                positional_encoding:bool = True
+                positional_encoding:bool = True,
+                use_rans_encoder:bool = True
                 ):
 
     if encode_input:
@@ -49,13 +50,16 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
         input_encoders = [None for _ in x_train]
 
     if encode_output:
-        if encoding == "channel-wise":
-            reduce_dims = list(range(y_train[0].ndim))
-        elif encoding == "pixel-wise":
-            reduce_dims = [0]
-        output_encoders = [UnitGaussianNormalizer(dim=reduce_dims) for _ in y_train]
-        for i in range(len(y_train)):
-            output_encoders[i].fit(y_train[i])
+        if use_rans_encoder:
+            output_encoders = [rans_custom_encoder() for _ in y_train]
+        else:
+            if encoding == "channel-wise":
+                reduce_dims = list(range(y_train[0].ndim))
+            elif encoding == "pixel-wise":
+                reduce_dims = [0]
+            output_encoders = [UnitGaussianNormalizer(dim=reduce_dims) for _ in y_train]
+            for i in range(len(y_train)):
+                output_encoders[i].fit(y_train[i])
     else:
         output_encoders = [None for _ in y_train]
 
@@ -98,15 +102,30 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
 
     return train_loader, test_loader, data_processors
 
-
-
+class rans_custom_encoder(Transform):
+    """Custom encoder for RANS data
+    transform the output to 1-output to have the data close to zero instead of close to 1
+    """
+    def __init__(self):
+        super().__init__()
+    def transform(self,x):
+        return 1-x
+    def inverse_transform(self,x):
+        return 1-x
+    def forward(self,x):
+        return self.transform(x)
+    def to(self,device):
+        return self
+    
+    
 def data_format(x_train:torch.tensor,y_train:torch.tensor,x_test:torch.tensor,y_test:torch.tensor,
                 encoding:str = "channel-wise",
                 encode_input:bool = False ,encode_output:bool = False,
                 grid_boundaries:tuple = [[-0.5, 0.5], [-0.5, 0.5]],
                 batch_size:int = 4,
                 test_batch_size:int = 4,
-                positional_encoding:bool = True
+                positional_encoding:bool = True,
+                use_rans_encoder:bool = True
                 ):
     if encode_input:
         if encoding == "channel-wise":
@@ -119,14 +138,16 @@ def data_format(x_train:torch.tensor,y_train:torch.tensor,x_test:torch.tensor,y_
         input_encoder = None
 
     if encode_output:
-        if encoding == "channel-wise":
-            reduce_dims = list(range(y_train.ndim))
-        elif encoding == "pixel-wise":
-            reduce_dims = [0]
+        if use_rans_encoder:
+            output_encoder = rans_custom_encoder()
+        else:
+            if encoding == "channel-wise":
+                reduce_dims = list(range(y_train.ndim))
+            elif encoding == "pixel-wise":
+                reduce_dims = [0]
 
-        output_encoder = UnitGaussianNormalizer(dim=reduce_dims)
-        output_encoder.fit(y_train)
-        #y_train = output_encoder.transform(y_train)
+            output_encoder = UnitGaussianNormalizer(dim=reduce_dims)
+            output_encoder.fit(y_train)
     else:
         output_encoder = None
 
