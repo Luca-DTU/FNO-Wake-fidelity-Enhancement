@@ -1,10 +1,35 @@
 from neuralop.datasets.output_encoder import UnitGaussianNormalizer
 from neuralop.datasets.tensor_dataset import TensorDataset
 from neuralop.datasets.transforms import PositionalEmbedding2D, Transform
-from neuralop.datasets.data_transforms import DefaultDataProcessor
+from neuralop.datasets.data_transforms import DefaultDataProcessor as parentProcessor
 import torch
 from torch.utils.data.dataset import Dataset
 
+class DefaultDataProcessor(parentProcessor):
+
+    def preprocess(self, data_dict, batched=True):
+        x = data_dict['x'].to(self.device)
+        y = data_dict['y'].to(self.device)
+
+        if self.in_normalizer is not None:
+            x = self.in_normalizer.transform(x)
+        if self.positional_encoding is not None:
+            x = self.positional_encoding(x, batched=batched)
+        if self.out_normalizer is not None and self.train:
+            y = self.out_normalizer.transform(y)
+
+        data_dict['x'] = x
+        data_dict['y'] = y
+
+        return data_dict
+
+    def postprocess(self, output, data_dict):
+        y = data_dict['y']
+        if self.out_normalizer and not self.train:
+            output = self.out_normalizer.inverse_transform(output)
+            # y = self.out_normalizer.inverse_transform(y)
+        data_dict['y'] = y
+        return output, data_dict
 
 class MultiResolutionDataset(Dataset):
     def __init__(self, X_set, y_set):
