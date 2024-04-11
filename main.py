@@ -17,6 +17,7 @@ import shutil
 torch.manual_seed(42)
 from neuralop.utils import count_model_params
 import pickle
+from neuralop.datasets.data_transforms import MGPatchingDataProcessor
 
 def main(config):
     data_source = getattr(data_loading, config.data_source.name)()
@@ -94,14 +95,25 @@ def main(config):
                                                                 grid_boundaries=config.data_format.grid_boundaries,
                                                                 use_rans_encoder=config.data_format.use_rans_encoder
                                                                 )
-    
         if config.data_format.positional_encoding:
             input_channels = x_train.shape[1]+2
         else:
             input_channels = x_train.shape[1]
+        if config.data_format.MGPatching.get('use', False):
+            input_channels *= config.data_format.MGPatching.kwargs.levels + 1
         out_channels = y_train.shape[1]
         data_processor = data_processor.to(device)
         model, optimizer, scheduler, train_loss, eval_losses = model_setup(config,input_channels,out_channels)
+
+        if config.data_format.MGPatching.get('use', False):
+            data_processor = MGPatchingDataProcessor(model,
+                                                    in_normalizer=data_processor.in_normalizer,
+                                                    out_normalizer=data_processor.out_normalizer,
+                                                    positional_encoding=data_processor.positional_encoding,
+                                                    device=device,
+                                                    **config.data_format.MGPatching.kwargs)
+            data_processor.to(device)
+
         log.info(f'\nOur model has {count_model_params(model)} parameters.')
         trainer = Trainer(model=model, n_epochs=config.train.epochs,
                         device=device,
@@ -136,18 +148,23 @@ def main(config):
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")
-    try:
+    if config.skip_errors:
+        try:
+            test_loss = main(config) # the main function should return the test loss to optimize the hyperparameters
+            if test_loss is None or np.isnan(test_loss):
+                raise ValueError("Test loss is None")
+        except Exception as e:
+            print("-----------------------------------")
+            print("JOB FAILED --- EXCEPTION")
+            log.error(f"Exception: {e}")
+            print("CONFIGURATION")
+            print(f"Running with config: {OmegaConf.to_yaml(config)}")
+            print("-----------------------------------")
+            test_loss = 1e10
+    else:
         test_loss = main(config) # the main function should return the test loss to optimize the hyperparameters
         if test_loss is None or np.isnan(test_loss):
             raise ValueError("Test loss is None")
-    except Exception as e:
-        print("-----------------------------------")
-        print("JOB FAILED --- EXCEPTION")
-        log.error(f"Exception: {e}")
-        print("CONFIGURATION")
-        print(f"Running with config: {OmegaConf.to_yaml(config)}")
-        print("-----------------------------------")
-        test_loss = 1e10
     return test_loss
 
 def clean_up_empty_files(outputs_folder = "outputs"):
