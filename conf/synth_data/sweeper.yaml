@@ -1,0 +1,14 @@
+defaults:
+  - synth_data
+  - override synth_data/hydra/sweeper: optuna
+hydra:
+  mode : MULTIRUN
+  sweeper:
+    n_trials: 15
+    params:
+      data_format.MGPatching.kwargs.levels: choice(1,2)
+      data_format.MGPatching.kwargs.padding_fraction: range(0.01,0.1,0.01)
+      data_format.MGPatching.kwargs.stitching: choice(True,False)
+      data_format.positional_encoding: choice(True,False)
+
+      

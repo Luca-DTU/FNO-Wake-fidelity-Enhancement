@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+  - base
+  - override hydra/sweeper: optuna
+###
+###
+multi_resolution: True
+###
+hydra:
+  mode : MULTIRUN
+  sweeper:
+    n_trials: 6
+    params:
+      data_source.name: choice(rans_prescaled_on_resolution,rans_prescaled_independently,rans)
+      data_format.encode_input: choice(True,False)
+      data_format.encode_output: choice(True,False)

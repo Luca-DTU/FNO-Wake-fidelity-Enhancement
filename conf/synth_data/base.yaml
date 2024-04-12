@@ -1,15 +1,17 @@
+defaults:
+  - conf/rans/base
 TFNO:
-  n_modes: [12,8]
-  hidden_channels: 12
+  n_modes: [12,12]
+  hidden_channels: 24
   # lifting_channels: 256
-  # projection_channels: 256
+  projection_channels: 32
   n_layers: 4
-  use_mlp: False
-  preactivation: False
-  fno_skip: 'linear'
+  use_mlp: True
+  preactivation: True
+  fno_skip: 'soft-gating'
   factorization: 'tucker'
   rank: 0.85
-  joint_factorization: False
+  joint_factorization: True
 
 adam:
   lr: 0.01
@@ -22,19 +24,25 @@ scheduler:
     gamma: 0.1
 
 train:
-  epochs: 2
-  batch_size: 256
+  epochs: 1
+  batch_size: 25
   test_batch_size: 10
-  loss: l2
-  # test_loss: [l2,h1]
-  test_loss:  [l2]
+  loss: h1
+  test_loss: [l2,h1]
+  # test_loss:  [l2]
 
 data_format:
-  encode_input: False
+  encode_input: True
   encode_output: True
-  use_rans_encoder: True
-  positional_encoding: False
+  use_rans_encoder: False
+  positional_encoding: True
   grid_boundaries: [[0.0, 1.0], [0.0, 1.0]]
+  MGPatching: 
+    use: False
+    kwargs:
+      padding_fraction: 0.078125
+      stitching: True
+      levels: 1
 
 multi_resolution: False
 data_source:
@@ -42,10 +50,11 @@ data_source:
   train_args:
     resolution: 64
     multivariate: false
-    reduce: 0.1
+    reduce : 0.1
   test_args:
     resolution: 128
     multivariate: false
   evaluate_args:
     output_names: [V]
     plot : True
+skip_errors: False
