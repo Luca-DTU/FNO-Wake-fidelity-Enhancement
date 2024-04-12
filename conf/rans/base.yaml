@@ -1,8 +1,8 @@
 TFNO:
-  n_modes: [8,8]
-  hidden_channels: 8
-  lifting_channels: 4
-  projection_channels: 4
+  n_modes: [12,12]
+  hidden_channels: 24
+  # lifting_channels: 4
+  # projection_channels: 4
   n_layers: 4
   use_mlp: True
   preactivation: True
@@ -18,16 +18,16 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [150,500,1000]
+    milestones: [125,250,500]
     gamma: 0.1
 
 train:
-  epochs: 1
-  batch_size: 25
-  test_batch_size: 64
-  loss: l2
-  # test_loss: [l2,h1]
-  test_loss:  [l2]
+  epochs: 1000
+  batch_size: 256
+  test_batch_size: 50
+  loss: h1
+  test_loss: [l2,h1]
+  # test_loss:  [l2]
 
 multi_resolution: False
 skip_errors: False
@@ -44,20 +44,21 @@ data_format:
       padding_fraction: 0.078125
       stitching: True
       levels: 1
+
 data_source:
   name: rans
   train_args:
     outputs: [U]
-    horizontal_grid_spacing: [0.5]
-    inflow_wind_direction : [270.0, 290.0, 310.0]
-    # inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
-    #                         300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
+    horizontal_grid_spacing: [2.0]
+    # inflow_wind_direction : [270.0, 290.0, 310.0] 
+    inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
+                            300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
   test_args:
     outputs: [U]
-    horizontal_grid_spacing: [1.0]
-    inflow_wind_direction : [270.0, 290.0, 310.0]
-    # inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
-    #                         300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
+    horizontal_grid_spacing: [4.0]
+    # inflow_wind_direction : [270.0, 290.0, 310.0]
+    inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
+                            300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
   evaluate_args:
     output_names: [U]
     plot : True
