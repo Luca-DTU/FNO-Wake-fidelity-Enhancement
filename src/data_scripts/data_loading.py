@@ -126,7 +126,28 @@ class rans(DataExtractor):
             x_train = torch.tensor(x_train).float()
             y_train = torch.tensor(y_train).float()
             return x_train, y_train
-    
+    def plot_output(self,output, y, titles = ["U"], save = True):
+        for i in range(output.shape[1]): # output channels
+            fig, ax = plt.subplots(1,3,figsize=(12,4))
+            fig.suptitle(f"{titles[i]}")
+            im = ax[0].imshow(output[0,i])
+            fig.colorbar(im, ax=ax[0], orientation='vertical')
+            im = ax[1].imshow(y[0,i])
+            fig.colorbar(im, ax=ax[1], orientation='vertical')
+            im = ax[2].imshow(output[0,i]-y[0,i])
+            fig.colorbar(im, ax=ax[2], orientation='vertical')
+            ax[0].set_title("Predicted")
+            ax[1].set_title("True")
+            ax[2].set_title("Difference")
+            for a in ax:
+                a.set_xticks([])
+                a.set_yticks([])
+            plt.tight_layout()
+            if save:
+                plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/output_{titles[i]}.png")
+                plt.close()
+            else:
+                plt.show()
 
 class rans_prescaled_independently(rans):
     # can this be achieved with super
