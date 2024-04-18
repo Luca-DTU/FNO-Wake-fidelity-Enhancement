@@ -1,12 +1,12 @@
 defaults:
- - base
+ - lightweight
 super_resolution: True
 data_source:
   name: rans_super_resolution
   train_args:
     outputs: [U]
-    input_spacing: 1.0
-    output_spacing: 2.0
+    input_spacing: 0.5
+    output_spacing: 1.0
 
   test_args:
     outputs: [U]

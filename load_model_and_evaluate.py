@@ -8,8 +8,8 @@ from omegaconf import OmegaConf
 import pickle
 from neuralop import LpLoss, H1Loss
 from neuralop.models import TFNO
-
-model_folder ="multirun/2024-04-01/08-55-46/9"
+from src.utils import SuperResolutionTFNO
+model_folder ="outputs/2024-04-15/15-22-31"
 config_path = model_folder+"/.hydra/config.yaml"
 model_path = os.path.join(model_folder,"model.pth")
 data_processor_path = os.path.join(model_folder,"data_processor.pkl")
@@ -18,6 +18,10 @@ data_processor_path = os.path.join(model_folder,"data_processor.pkl")
 config = OmegaConf.load(config_path)
 # load the test data
 data_source = getattr(data_loading, config.data_source.name)()
+### override
+config.data_source.test_args.input_spacing = 2.0
+config.data_source.test_args.output_spacing = 4.0
+###
 x_test,y_test = data_source.extract(**config.data_source.test_args)
 # load model
 if config.data_format.positional_encoding:
@@ -25,7 +29,11 @@ if config.data_format.positional_encoding:
 else:
     input_channels = x_test.shape[1]
 out_channels = y_test.shape[1]
-model = TFNO(**config.TFNO, in_channels=input_channels, out_channels=out_channels)
+if config.super_resolution:
+    model = SuperResolutionTFNO(**config.TFNO, in_channels=input_channels, 
+                                out_channels=out_channels, out_size=y_test.shape[2:])
+else:
+    model = TFNO(**config.TFNO, in_channels=input_channels, out_channels=out_channels)
 model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 model.eval()
 # load data processor
