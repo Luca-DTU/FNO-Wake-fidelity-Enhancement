@@ -1,21 +1,18 @@
 defaults:
  - base
+super_resolution: True
 data_source:
   name: rans_super_resolution
   train_args:
     outputs: [U]
-    input_spacing: 0.5
-    output_spacing: 1.0
-    inflow_wind_direction : [270.0, 290.0, 310.0]
-    # inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
-    #                         300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
+    input_spacing: 1.0
+    output_spacing: 2.0
+
   test_args:
     outputs: [U]
-    input_spacing: 0.5
-    output_spacing: 1.0
-    inflow_wind_direction : [270.0, 290.0, 310.0]
-    # inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
-    #                         300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
+    input_spacing: 1.0
+    output_spacing: 2.0
+
   evaluate_args:
     output_names: [U]
     plot : True

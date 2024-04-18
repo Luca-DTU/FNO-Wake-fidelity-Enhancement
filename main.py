@@ -6,6 +6,7 @@ from src.trainer import Trainer, MultiResTrainer
 from neuralop import LpLoss, H1Loss
 from neuralop.training.callbacks import Callback
 from src.utils import data_format, data_format_multi_resolution
+from src.utils import SuperResolutionTFNO
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from src.data_scripts import data_loading
 import hydra
@@ -23,9 +24,13 @@ def main(config):
     data_source = getattr(data_loading, config.data_source.name)()
     x_train, y_train = data_source.extract(**config.data_source.train_args)
     x_test,y_test = data_source.extract(**config.data_source.test_args)
-    def model_setup(config,input_channels,out_channels):
-        model = TFNO(**config.TFNO,
-                     in_channels=input_channels, out_channels=out_channels)
+    def model_setup(config,input_channels,out_channels, super_resolution=False, out_size=(None,None)):
+        if super_resolution:
+            model = SuperResolutionTFNO(**config.TFNO,
+                     in_channels=input_channels, out_channels=out_channels, out_size=out_size)
+        else:
+            model = TFNO(**config.TFNO,
+                        in_channels=input_channels, out_channels=out_channels)
         model = model.to(device)
         optimizer = torch.optim.Adam(model.parameters(), 
                                         lr=config.adam.lr, 
@@ -57,7 +62,7 @@ def main(config):
             input_channels = x_train[0].shape[1]
         data_processors = [data_processor.to(device) for data_processor in data_processors]
         out_channels = y_train[0].shape[1]
-        model, optimizer, scheduler, train_loss, eval_losses = model_setup(config,input_channels,out_channels)
+        model, optimizer, scheduler, train_loss, eval_losses = model_setup(config,input_channels,out_channels, config.super_resolution)
         log.info(f'\nOur model has {count_model_params(model)} parameters.')
         trainer = MultiResTrainer(model=model, n_epochs=config.train.epochs,
                         device=device,
@@ -103,7 +108,10 @@ def main(config):
             input_channels *= config.data_format.MGPatching.kwargs.levels + 1
         out_channels = y_train.shape[1]
         data_processor = data_processor.to(device)
-        model, optimizer, scheduler, train_loss, eval_losses = model_setup(config,input_channels,out_channels)
+        model, optimizer, scheduler, train_loss, eval_losses = model_setup(config,input_channels,
+                out_channels, 
+                config.super_resolution,
+                out_size= y_train.shape[-2:]) # used for super resolution, not accessed otherwise 
 
         if config.data_format.MGPatching.get('use', False):
             data_processor = MGPatchingDataProcessor(model,
@@ -144,7 +152,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf/rans", config_name="grid_search",version_base=None)
+@hydra.main(config_path="conf/rans", config_name="super_resolution",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")

@@ -29,6 +29,7 @@ train:
   test_loss: [l2,h1]
   # test_loss:  [l2]
 
+super_resolution: False
 multi_resolution: False
 skip_errors: False
 

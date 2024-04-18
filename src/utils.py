@@ -212,3 +212,35 @@ def data_format(x_train:torch.tensor,y_train:torch.tensor,x_test:torch.tensor,y_
         positional_encoding=pos_encoding
     )
     return train_loader, test_loader, data_processor
+
+
+import torch.nn as nn
+from neuralop.models import TFNO
+from neuralop.layers.mlp import MLP
+
+class SuperResolutionProjection(MLP):
+    def __init__(self, out_size, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Assume the base MLP class outputs (batch size, channels out, *size)
+        # We need to add a final layer to map to the final resolution, out_size.
+        # Using an upsampling layer. Adjust this to match your specific needs (e.g., interpolation method).
+        self.upsample = nn.Upsample(size=out_size, mode='bilinear', align_corners=False)
+        
+    def forward(self, x):
+        # First, pass through the original MLP layers
+        x = super().forward(x)
+        # Then upsample to the desired output size
+        x = self.upsample(x)
+        return x
+
+class SuperResolutionTFNO(TFNO):
+    def __init__(self, out_size: tuple,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.projection = SuperResolutionProjection(out_size,
+            in_channels=self.hidden_channels,
+            out_channels=self.out_channels,
+            hidden_channels=self.projection_channels,
+            n_layers=2,
+            n_dim=self.n_dim,
+            non_linearity=self.non_linearity
+        )

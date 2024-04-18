@@ -9,7 +9,7 @@ import pickle
 from neuralop import LpLoss, H1Loss
 from neuralop.models import TFNO
 
-model_folder ="multirun/2024-04-01/08-55-46/8"
+model_folder ="multirun/2024-04-01/08-55-46/9"
 config_path = model_folder+"/.hydra/config.yaml"
 model_path = os.path.join(model_folder,"model.pth")
 data_processor_path = os.path.join(model_folder,"data_processor.pkl")
@@ -18,7 +18,7 @@ data_processor_path = os.path.join(model_folder,"data_processor.pkl")
 config = OmegaConf.load(config_path)
 # load the test data
 data_source = getattr(data_loading, config.data_source.name)()
-x_test,y_test = data_source.extract(**config.data_source.train_args)
+x_test,y_test = data_source.extract(**config.data_source.test_args)
 # load model
 if config.data_format.positional_encoding:
     input_channels = x_test.shape[1]+2
