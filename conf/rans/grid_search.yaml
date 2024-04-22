@@ -3,11 +3,28 @@ defaults:
   - base
 ### OVVERRIDES
 skip_errors: True
+
+data_source:
+  train_args:
+    inputs: [A_AWF,Fx]
+    path: data/RANS_Newton/
+  test_args:
+    inputs: [A_AWF,Fx]
+    path: data/RANS_Newton/
+
+data_format:
+  encode_input: True
+
+TFNO : 
+  non_linearity : sigmoid #gelu # use same capitalisation as torch.nn.functional
+
 ###
 hydra:
   mode : MULTIRUN
   sweeper:
     params:
-      data_source.name: choice(rans_prescaled_on_resolution,rans_prescaled_independently,rans)
-      TFNO.n_layers: choice(4,8,12,16)
-      train.batch_size: choice(16,32,64,128)
+      TFNO.n_layers: choice(4,8)
+      train.batch_size: choice(32,256)
+      TFNO.non_linearity: choice(sigmoid,tanh,gelu)
+      data_source.train_args.inputs: choice([A_AWF,Fx],[A_AWF])
+

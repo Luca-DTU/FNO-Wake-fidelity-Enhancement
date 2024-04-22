@@ -1,6 +1,6 @@
 TFNO:
-  n_modes: [12,12]
-  hidden_channels: 24
+  n_modes: [32,32]
+  hidden_channels: 32
   # lifting_channels: 4
   # projection_channels: 4
   n_layers: 4
