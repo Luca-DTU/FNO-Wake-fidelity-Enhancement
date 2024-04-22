@@ -48,6 +48,7 @@ class DataExtractor():
         data = data_processor.preprocess(data, batched=True)
         output = model(data["x"])
         output, data = data_processor.postprocess(output, data)
+        # output = data_processor.out_normalizer.inverse_transform(output)
         y = data["y"]
         # detach and convert to numpy
         output = output.detach().cpu().numpy()
@@ -128,12 +129,15 @@ class rans(DataExtractor):
             return x_train, y_train
     def plot_output(self,output, y, titles = ["U"], save = True):
         for i in range(output.shape[1]): # output channels
-            fig, ax = plt.subplots(1,3,figsize=(12,4))
+            fig, ax = plt.subplots(1,3,figsize=(8,4))
             fig.suptitle(f"{titles[i]}")
-            im = ax[0].imshow(output[0,i])
-            fig.colorbar(im, ax=ax[0], orientation='vertical')
-            im = ax[1].imshow(y[0,i])
-            fig.colorbar(im, ax=ax[1], orientation='vertical')
+            # Determine the common scale for the first two images
+            vmin = min(np.min(output[0, i]), np.min(y[0, i]))
+            vmax = max(np.max(output[0, i]), np.max(y[0, i]))
+
+            im = ax[0].imshow(output[0,i], vmin=vmin, vmax=vmax)
+            im = ax[1].imshow(y[0,i], vmin=vmin, vmax=vmax)
+            fig.colorbar(im,ax=ax[1], orientation='vertical')
             im = ax[2].imshow(output[0,i]-y[0,i])
             fig.colorbar(im, ax=ax[2], orientation='vertical')
             ax[0].set_title("Predicted")
@@ -148,7 +152,22 @@ class rans(DataExtractor):
                 plt.close()
             else:
                 plt.show()
+        self.plot_cross_section(output, y, titles = titles, save = save)
 
+    def plot_cross_section(self,output, y, titles = ["U"], save = True, relative_postion = 0.8):
+        for i in range(output.shape[1]):
+            y_cross_section = y[0,i,int(relative_postion*y.shape[2])]
+            output_cross_section = output[0,i,int(relative_postion*output.shape[2])]
+            plt.figure(figsize=(10,5))
+            plt.plot(y_cross_section, label = "True")
+            plt.plot(output_cross_section, label = "Predicted")
+            plt.legend()
+            plt.title(f"{titles[i]}")
+            if save:
+                plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/cross_section_{titles[i]}.png")
+                plt.close()
+            else:
+                plt.show()
 class rans_prescaled_independently(rans):
     # can this be achieved with super
     def extract_sample(self,dataset, layout, wd, inputs, outputs):
@@ -232,15 +251,12 @@ class synthetic_data(DataExtractor):
                 y_list.append(y_train)
             return x_list, y_list
 
-def investigate_ranges():
+def investigate_ranges(*args, **kwargs):
     # investigate the ranges of the different datasets
     # note: this is not in the requirements.txt
     from sklearn.linear_model import LinearRegression
     extractor = rans()
-    inflow_wind_direction = [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
-                            300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
-    x,y = extractor.extract(horizontal_grid_spacing = [0.5,1.0,2.0,4.0],
-                          inflow_wind_direction = inflow_wind_direction, outputs = ['U'])
+    x,y = extractor.extract(*args,**kwargs)
     # pick a sample and plot
     sample = 27
     fig, ax = plt.subplots(2,4,figsize=(10,5))
@@ -313,6 +329,11 @@ class rans_super_resolution(rans):
         return x_train, y_train
         
 if __name__ == "__main__":
-    investigate_ranges()
+    inflow_wind_direction = [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
+                            300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
+    investigate_ranges(path = "data/RANS_Newton/",
+                       horizontal_grid_spacing = [0.5,1.0,2.0,4.0],
+                    inflow_wind_direction = inflow_wind_direction, outputs = ['U'],
+                    inputs = ["Fx"])
 
 
