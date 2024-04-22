@@ -25,11 +25,17 @@ def main(config):
     x_train, y_train = data_source.extract(**config.data_source.train_args)
     x_test,y_test = data_source.extract(**config.data_source.test_args)
     def model_setup(config,input_channels,out_channels, super_resolution=False, out_size=(None,None)):
+        if "non_linearity" in config.TFNO:
+            non_linearity = getattr(torch.nn.functional, config.TFNO.non_linearity) 
+            kwargs = OmegaConf.to_container(config.TFNO)
+            kwargs["non_linearity"] = non_linearity
+        else:
+            kwargs = OmegaConf.to_container(config.TFNO)
         if super_resolution:
-            model = SuperResolutionTFNO(**config.TFNO,
+            model = SuperResolutionTFNO(**kwargs,
                      in_channels=input_channels, out_channels=out_channels, out_size=out_size)
         else:
-            model = TFNO(**config.TFNO,
+            model = TFNO(**kwargs,
                         in_channels=input_channels, out_channels=out_channels)
         model = model.to(device)
         optimizer = torch.optim.Adam(model.parameters(), 
@@ -152,7 +158,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf/rans", config_name="super_resolution",version_base=None)
+@hydra.main(config_path="conf/rans", config_name="newton",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")
