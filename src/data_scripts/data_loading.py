@@ -163,6 +163,7 @@ class rans(DataExtractor):
             plt.plot(output_cross_section, label = "Predicted")
             plt.legend()
             plt.title(f"{titles[i]}")
+            plt.xticks([])
             if save:
                 plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/cross_section_{titles[i]}.png")
                 plt.close()
