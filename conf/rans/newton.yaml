@@ -4,9 +4,6 @@ data_source:
   train_args:
     inputs: [A_AWF,Fx]
     path: data/RANS_Newton/
-  test_args:
-    inputs: [A_AWF,Fx]
-    path: data/RANS_Newton/
 
 data_format:
   encode_input: True

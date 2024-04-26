@@ -1,6 +1,6 @@
 defaults:
-  - _self_
   - base
+  - _self_
 ### OVVERRIDES
 skip_errors: True
 
@@ -8,9 +8,7 @@ data_source:
   train_args:
     inputs: [A_AWF,Fx]
     path: data/RANS_Newton/
-  test_args:
-    inputs: [A_AWF,Fx]
-    path: data/RANS_Newton/
+
 
 data_format:
   encode_input: True
@@ -26,5 +24,5 @@ hydra:
       TFNO.n_layers: choice(4,8)
       train.batch_size: choice(32,256)
       TFNO.non_linearity: choice(sigmoid,tanh,gelu)
-      data_source.train_args.inputs: choice([A_AWF,Fx],[A_AWF])
+      data_source.train_args.inputs: choice([A_AWF],[Fx])
 
