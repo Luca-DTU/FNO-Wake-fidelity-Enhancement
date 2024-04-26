@@ -23,7 +23,9 @@ from neuralop.datasets.data_transforms import MGPatchingDataProcessor
 def main(config):
     data_source = getattr(data_loading, config.data_source.name)()
     x_train, y_train = data_source.extract(**config.data_source.train_args)
-    x_test,y_test = data_source.extract(**config.data_source.test_args)
+    test_args = config.data_source.train_args
+    test_args.update(config.data_source.test_args)
+    x_test,y_test = data_source.extract(**test_args)
     def model_setup(config,input_channels,out_channels, super_resolution=False, out_size=(None,None)):
         if "non_linearity" in config.TFNO:
             non_linearity = getattr(torch.nn.functional, config.TFNO.non_linearity) 
@@ -158,7 +160,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf/rans", config_name="newton",version_base=None)
+@hydra.main(config_path="conf/rans", config_name="grid_search",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")
