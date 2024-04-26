@@ -128,8 +128,9 @@ class rans(DataExtractor):
             y_train = torch.tensor(y_train).float()
             return x_train, y_train
     def plot_output(self,output, y, titles = ["U"], save = True):
+        relative_postion_cross_section = 0.8
         for i in range(output.shape[1]): # output channels
-            fig, ax = plt.subplots(1,3,figsize=(8,4))
+            fig, ax = plt.subplots(1,4,figsize=(12,4))
             fig.suptitle(f"{titles[i]}")
             # Determine the common scale for the first two images
             vmin = min(np.min(output[0, i]), np.min(y[0, i]))
@@ -137,22 +138,32 @@ class rans(DataExtractor):
 
             im = ax[0].imshow(output[0,i], vmin=vmin, vmax=vmax)
             im = ax[1].imshow(y[0,i], vmin=vmin, vmax=vmax)
-            fig.colorbar(im,ax=ax[1], orientation='vertical')
+            fig.colorbar(im, ax=ax[1], orientation='vertical', shrink=0.9)
             im = ax[2].imshow(output[0,i]-y[0,i])
-            fig.colorbar(im, ax=ax[2], orientation='vertical')
+            fig.colorbar(im, ax=ax[2], orientation='vertical', shrink=0.9)
+            ax[3].plot(y[0,i,int(relative_postion_cross_section*y.shape[2])], label = "True")
+            ax[3].plot(output[0,i,int(relative_postion_cross_section*output.shape[2])], label = "Predicted")
+            ax[3].legend(loc = "best")
+            ax[3].set_xticks([])
+            # put y ticks on the right
+            ax[3].yaxis.tick_right()
+
             ax[0].set_title("Predicted")
             ax[1].set_title("True")
             ax[2].set_title("Difference")
-            for a in ax:
+            ax[3].set_title("Cross section")
+            for a in ax[:3]:
                 a.set_xticks([])
                 a.set_yticks([])
+                # add horizontal line at relative position
+                a.axhline(int(relative_postion_cross_section*y.shape[2]), color='black', linestyle='--', linewidth=1)
             plt.tight_layout()
             if save:
                 plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/output_{titles[i]}.png")
                 plt.close()
             else:
                 plt.show()
-        self.plot_cross_section(output, y, titles = titles, save = save)
+        # self.plot_cross_section(output, y, titles = titles, save = save)
 
     def plot_cross_section(self,output, y, titles = ["U"], save = True, relative_postion = 0.8):
         for i in range(output.shape[1]):
