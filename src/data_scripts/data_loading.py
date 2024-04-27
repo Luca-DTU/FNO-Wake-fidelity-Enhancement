@@ -80,7 +80,7 @@ class DataExtractor():
             output = torch.tensor(output).float()
             y = torch.tensor(y).float()
             for name, loss_fn in losses.items():
-                loss[name] = loss_fn(output, y).item()
+                loss[name] = loss_fn(output, y).sum().item()
                 log.info(f"Test loss {name}: {loss[name]}")
                 total_loss[name] += loss[name]
         log.info(f"Test loss: {total_loss}")
