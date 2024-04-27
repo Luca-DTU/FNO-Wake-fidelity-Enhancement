@@ -41,6 +41,7 @@ class DataExtractor():
     def evaluate_sample(self,test_loader, model,data_processor,output_names,plot=True,**kwargs):
         test_samples = test_loader.dataset
         index = np.random.randint(0, len(test_samples))
+        # index = 669
         data = test_samples[index]
         data["x"] = data["x"].unsqueeze(0)
         data["y"] = data["y"].unsqueeze(0)
@@ -55,7 +56,7 @@ class DataExtractor():
         y = y.detach().cpu().numpy()
         # plot
         if plot:
-            self.plot_output(output, y, titles = output_names, **kwargs)
+            self.plot_output(output, y, titles = output_names, relative_postion_cross_section = 0.95,**kwargs)
 
     
     def evaluate(self,test_loader, model,data_processor,losses,**kwargs):
@@ -127,10 +128,9 @@ class rans(DataExtractor):
             x_train = torch.tensor(x_train).float()
             y_train = torch.tensor(y_train).float()
             return x_train, y_train
-    def plot_output(self,output, y, titles = ["U"], save = True):
-        relative_postion_cross_section = 0.8
+    def plot_output(self,output, y, titles = ["U"], save = True, relative_postion_cross_section = 0.8):
         for i in range(output.shape[1]): # output channels
-            fig, ax = plt.subplots(1,4,figsize=(12,4))
+            fig, ax = plt.subplots(1,4,figsize=(10,4))
             fig.suptitle(f"{titles[i]}")
             # Determine the common scale for the first two images
             vmin = min(np.min(output[0, i]), np.min(y[0, i]))
@@ -163,23 +163,7 @@ class rans(DataExtractor):
                 plt.close()
             else:
                 plt.show()
-        # self.plot_cross_section(output, y, titles = titles, save = save)
 
-    def plot_cross_section(self,output, y, titles = ["U"], save = True, relative_postion = 0.8):
-        for i in range(output.shape[1]):
-            y_cross_section = y[0,i,int(relative_postion*y.shape[2])]
-            output_cross_section = output[0,i,int(relative_postion*output.shape[2])]
-            plt.figure(figsize=(10,5))
-            plt.plot(y_cross_section, label = "True")
-            plt.plot(output_cross_section, label = "Predicted")
-            plt.legend()
-            plt.title(f"{titles[i]}")
-            plt.xticks([])
-            if save:
-                plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/cross_section_{titles[i]}.png")
-                plt.close()
-            else:
-                plt.show()
 class rans_prescaled_independently(rans):
     # can this be achieved with super
     def extract_sample(self,dataset, layout, wd, inputs, outputs):
