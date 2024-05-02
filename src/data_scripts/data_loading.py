@@ -40,8 +40,10 @@ class DataExtractor():
 
     def evaluate_sample(self,test_loader, model,data_processor,output_names,plot=True,**kwargs):
         test_samples = test_loader.dataset
-        index = np.random.randint(0, len(test_samples))
-        # index = 669
+        if len(test_samples) == 800:
+            index = 669
+        else:
+            index = np.random.randint(0, len(test_samples))
         data = test_samples[index]
         data["x"] = data["x"].unsqueeze(0)
         data["y"] = data["y"].unsqueeze(0)
@@ -143,7 +145,7 @@ class rans(DataExtractor):
             fig.colorbar(im, ax=ax[2], orientation='vertical', shrink=0.9)
             ax[3].plot(y[0,i,int(relative_postion_cross_section*y.shape[2])], label = "True")
             ax[3].plot(output[0,i,int(relative_postion_cross_section*output.shape[2])], label = "Predicted")
-            ax[3].legend(loc = "best")
+            ax[3].legend(loc = "best",framealpha=0.3)
             ax[3].set_xticks([])
             # put y ticks on the right
             ax[3].yaxis.tick_right()
