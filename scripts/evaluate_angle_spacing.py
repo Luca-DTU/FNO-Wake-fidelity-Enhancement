@@ -1,6 +1,5 @@
 
 import os
-from neuralop.utils import count_model_params
 import torch
 from neuralop.datasets.tensor_dataset import TensorDataset
 from src.data_scripts import data_loading
@@ -9,46 +8,55 @@ import pickle
 from neuralop import LpLoss, H1Loss
 from neuralop.models import TFNO
 from src.utils import SuperResolutionTFNO
-model_folder ="outputs/2024-04-15/15-22-31" # super resolution
-# model_folder = "multirun/2024-04-01/08-55-46/9" # base case
+model_folder = "multirun/2024-04-27/15-16-35/8" # baest multi-res
 config_path = model_folder+"/.hydra/config.yaml"
 model_path = os.path.join(model_folder,"model.pth")
-data_processor_path = os.path.join(model_folder,"data_processor.pkl")
-
+data_processor_path = os.path.join(model_folder,"data_processors.pkl")
 # read the config file
 config = OmegaConf.load(config_path)
 # load the test data
 data_source = getattr(data_loading, config.data_source.name)()
-### override for super resolution
-config.data_source.test_args.input_spacing = 2.0
-config.data_source.test_args.output_spacing = 4.0
-###
 all_directions = config.data_source.test_args.inflow_wind_direction
 loss_dict = {}
 for direction in all_directions:
     config.data_source.test_args.inflow_wind_direction = [direction]
-    x_test,y_test = data_source.extract(**config.data_source.test_args)
+    test_args = config.data_source.train_args
+    test_args.update(config.data_source.test_args)
+    x_test,y_test = data_source.extract(**test_args)
     # load model
-    if config.data_format.positional_encoding:
-        input_channels = x_test.shape[1]+2
-    else:
-        input_channels = x_test.shape[1]
-    out_channels = y_test.shape[1]
-    if config.get("super_resolution"):
-        model = SuperResolutionTFNO(**config.TFNO, in_channels=input_channels, 
-                                    out_channels=out_channels, out_size=y_test.shape[2:])
-    else:
-        model = TFNO(**config.TFNO, in_channels=input_channels, out_channels=out_channels)
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-    model.eval()
-    # load data processor
-    with open(data_processor_path, "rb") as f:
-        data_processor = pickle.load(f)
-    # eval losses
-    l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
-    h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
-    eval_losses = {'l2': l2loss, 'h1': h1loss}
-    test_batch_size = config.train.test_batch_size
+    if "model" not in locals():
+        if config.data_format.positional_encoding:
+            input_channels = x_test.shape[1]+2
+        else:
+            input_channels = x_test.shape[1]
+        out_channels = y_test.shape[1]
+
+        if "non_linearity" in config.TFNO:
+            non_linearity = getattr(torch.nn.functional, config.TFNO.non_linearity) 
+            kwargs = OmegaConf.to_container(config.TFNO)
+            kwargs["non_linearity"] = non_linearity
+        else:
+            kwargs = OmegaConf.to_container(config.TFNO)
+
+        if config.get("super_resolution"):
+            model = SuperResolutionTFNO(**kwargs, in_channels=input_channels, 
+                                        out_channels=out_channels, out_size=y_test.shape[2:])
+        else:
+            model = TFNO(**kwargs, in_channels=input_channels, out_channels=out_channels)
+        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+        model.eval()
+        # load data processor
+        with open(data_processor_path, "rb") as f:
+            data_processor = pickle.load(f)
+        if isinstance(data_processor, list):
+            data_processor = data_processor[-1]
+        data_processor = data_processor.to("cpu")
+        # eval losses
+        l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
+        h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
+        eval_losses = {'l2': l2loss, 'h1': h1loss}
+        # test_batch_size = config.train.test_batch_size
+        test_batch_size = 4
     # dummy test loader
     test_db = TensorDataset(
         x_test,
@@ -62,6 +70,5 @@ for direction in all_directions:
         pin_memory=True,
         persistent_workers=False,
     )
-    data_processor = data_processor.to("cpu")
-    test_loss = data_source.evaluate(test_loader,model,data_processor,losses=eval_losses,save = False, **config.data_source.evaluate_args)
+    test_loss = data_source.evaluate(test_loader,model,data_processor,losses=eval_losses,save = False, plot=False, output_names = ["U"])
     loss_dict[direction] = test_loss
