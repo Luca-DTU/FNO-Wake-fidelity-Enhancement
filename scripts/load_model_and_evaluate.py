@@ -1,4 +1,8 @@
-
+""" This script loads a trained model and evaluates it on the test data. 
+The model and data processor are loaded from the specified folder. 
+The test data is loaded from the data source specified in the config file. 
+The evaluation is done using the losses specified in the config file. 
+The test loss is printed to the console."""
 import os
 from neuralop.utils import count_model_params
 import torch

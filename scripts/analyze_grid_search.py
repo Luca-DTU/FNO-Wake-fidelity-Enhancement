@@ -1,4 +1,7 @@
-
+""" This script is used to analyze the results of a grid search experiment. 
+It reads the main.log file in each subfolder of a given directory and extracts the test loss value. 
+It then reads the overrides.yaml file in each subfolder to extract the hyperparameters used in the experiment. 
+The results are stored in a pandas DataFrame and printed to the console. """
 import os
 import pandas as pd
 import re
