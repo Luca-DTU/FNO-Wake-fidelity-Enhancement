@@ -7,7 +7,30 @@ from omegaconf import OmegaConf
 import pickle
 from neuralop import LpLoss, H1Loss
 from neuralop.models import TFNO
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from src.utils import SuperResolutionTFNO
+
+def plot_wind_direction_error(series):
+    # Extract the wind directions and MSE values from the series
+    wind_directions = series.index.values
+    mse_values = series.values
+    # Convert degrees to radians
+    radians = np.deg2rad(wind_directions)
+    # Create a polar plot
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(6, 4))
+    ax.plot(radians, mse_values, 'o-', linewidth=1.5)
+    ax.set_theta_zero_location('N')  # Set 0 degrees to the top (North)
+    ax.set_theta_direction(-1)  # Clockwise
+    # Display only the specified slice
+    ax.set_thetamin(min(wind_directions))  # Minimum boundary for theta
+    ax.set_thetamax(max(wind_directions))  # Maximum boundary for theta
+    plt.tight_layout()
+    plt.savefig("wind_direction_error.png")
+    plt.show()
+
+
 model_folder = "multirun/2024-04-27/15-16-35/8" # baest multi-res
 config_path = model_folder+"/.hydra/config.yaml"
 model_path = os.path.join(model_folder,"model.pth")
@@ -72,3 +95,5 @@ for direction in all_directions:
     )
     test_loss = data_source.evaluate(test_loader,model,data_processor,losses=eval_losses,save = False, plot=False, output_names = ["U"])
     loss_dict[direction] = test_loss
+loss_df = pd.Series(loss_dict)
+plot_wind_direction_error(loss_df)
