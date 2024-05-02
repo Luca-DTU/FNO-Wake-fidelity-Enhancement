@@ -249,6 +249,27 @@ class synthetic_data(DataExtractor):
                 y_list.append(y_train)
             return x_list, y_list
 
+def investigate_angles(*args, **kwargs):
+    # investigate the ranges of the different datasets
+    # note: this is not in the requirements.txt
+    extractor = rans()
+    x,y = extractor.extract(*args,**kwargs)
+    # pick a sample and plot
+    fig, ax = plt.subplots(1,x.shape[0],figsize=(10,5))
+    # plot with colorbar for each axis
+    for i in range(x.shape[0]):
+        x_ = x[i,0]
+        y_ = y[i,0]
+        im = ax[i].imshow(x_)
+        ax[i].set_title(str(kwargs['inflow_wind_direction'][i]))
+    # remove ticks
+    for a in ax:
+        a.set_xticks([])
+        a.set_yticks([])
+    plt.tight_layout()
+    plt.show()
+
+
 def investigate_ranges(*args, **kwargs):
     # investigate the ranges of the different datasets
     # note: this is not in the requirements.txt
@@ -292,7 +313,6 @@ def investigate_ranges(*args, **kwargs):
     plt.tight_layout()
     plt.savefig("min_U_regression.png")
     plt.show()
-
 class rans_super_resolution(rans):
     def extract_single_spacing(self,spacing):
         x_list = []
@@ -327,11 +347,18 @@ class rans_super_resolution(rans):
         return x_train, y_train
         
 if __name__ == "__main__":
-    inflow_wind_direction = [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
-                            300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
-    investigate_ranges(path = "data/RANS_Newton/",
-                       horizontal_grid_spacing = [0.5,1.0,2.0,4.0],
-                    inflow_wind_direction = inflow_wind_direction, outputs = ['U'],
+    # inflow_wind_direction = [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
+    #                         300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
+    # investigate_ranges(path = "data/RANS_Newton/",
+    #                    horizontal_grid_spacing = [0.5,1.0,2.0,4.0],
+    #                 inflow_wind_direction = inflow_wind_direction, outputs = ['U'],
+    #                 inputs = ["Fx"])
+
+
+    inflow_wind_directions = [270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0]
+    investigate_angles(path = "data/RANS_Newton/",
+                    horizontal_grid_spacing = [2.0],
+                    inflow_wind_direction = inflow_wind_directions, outputs = ['U'], layout_type = [27],
                     inputs = ["Fx"])
 
 
