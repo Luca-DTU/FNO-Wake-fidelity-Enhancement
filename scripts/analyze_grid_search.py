@@ -29,8 +29,8 @@ def analyse_multirun(path, log_file_name, target_measure, column_names=None):
                 print(e)
                 continue
             # Extract the target measure value from the line
-            measure_value = float(measure_line.split(":")[-1])
-            
+            measure_value = float(re.search(r"'l2': (\d+\.\d+)", measure_line).group(1))
+            # measure_value = float(re.search(r"Test loss l2: (\d+\.\d+)", measure_line).group(1))
             # Define the path to the overrides.yaml file in the current subfolder
             overrides_path = os.path.join(path, folder, ".hydra", "overrides.yaml")
             # Open the overrides file and read its contents
@@ -60,7 +60,11 @@ def analyse_multirun(path, log_file_name, target_measure, column_names=None):
     return df
 if __name__ == "__main__":
     # Define the path to the directory containing the subfolders
-    path = "multirun/2024-04-26/17-08-59"
-    df = analyse_multirun(path, "main.log", "Test loss l2")
+    # path = "multirun/2024-04-26/17-08-59"
+    path = "multirun/2024-05-01/18-21-02"
+    # path = "multirun/2024-04-27/15-16-35"
+    df = analyse_multirun(path, "main.log", "Test loss: {'l2'", 
+                          column_names=["Layers","Batch Size", "Activation Function", "Loss type", "Test loss"]
+                          )
     print(df)
     print(df.to_latex(index = False,float_format="%.4f"))
