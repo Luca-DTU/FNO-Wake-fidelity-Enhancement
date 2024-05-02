@@ -1,16 +1,29 @@
 defaults:
-  - _self_
   - base
+  - _self_
   - override hydra/sweeper: optuna
-###
-###
-multi_resolution: True
+### OVVERRIDES
+skip_errors: True
+
+data_source:
+  train_args:
+    inputs: [A_AWF,Fx]
+    path: data/RANS_Newton/
+
+
+data_format:
+  encode_input: True
+
+TFNO : 
+  non_linearity : sigmoid #gelu # use same capitalisation as torch.nn.functional
+
 ###
 hydra:
   mode : MULTIRUN
   sweeper:
-    n_trials: 6
+    n_trials: 20
     params:
-      data_source.name: choice(rans_prescaled_on_resolution,rans_prescaled_independently,rans)
-      data_format.encode_input: choice(True,False)
-      data_format.encode_output: choice(True,False)
+      TFNO.n_layers: choice(4,8)
+      train.batch_size: choice(32,256)
+      TFNO.non_linearity: choice(sigmoid,tanh,gelu)
+      data_source.train_args.inputs: choice([A_AWF],[Fx])

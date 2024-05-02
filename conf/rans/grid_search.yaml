@@ -6,15 +6,31 @@ skip_errors: True
 
 data_source:
   train_args:
-    inputs: [A_AWF,Fx]
+    inputs: [Fx]
     path: data/RANS_Newton/
+  #   horizontal_grid_spacing: [0.5,1.0,2.0]
+  # test_args:
+  #   horizontal_grid_spacing: [4.0]
 
-
-data_format:
-  encode_input: True
+# multi_resolution: True
 
 TFNO : 
   non_linearity : sigmoid #gelu # use same capitalisation as torch.nn.functional
+
+scheduler:
+  name : MultiStepLR
+  args:
+    milestones: [50,100,150,200]
+    gamma: 0.5
+
+train:
+  epochs: 250
+  batch_size: 128
+  test_batch_size: 25
+  loss: h1
+  test_loss: [l2,h1,weightedL2]
+  # test_loss:  [l2]
+
 
 ###
 hydra:
@@ -22,7 +38,6 @@ hydra:
   sweeper:
     params:
       TFNO.n_layers: choice(4,8)
-      train.batch_size: choice(32,256)
-      TFNO.non_linearity: choice(sigmoid,tanh,gelu)
-      data_source.train_args.inputs: choice([A_AWF],[Fx])
-
+      train.batch_size: choice(64,32)
+      TFNO.non_linearity: choice(tanh,gelu)
+      train.loss: choice(weightedL2,h1)
