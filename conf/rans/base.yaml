@@ -28,6 +28,7 @@ train:
   loss: h1
   test_loss: [l2,h1]
   # test_loss:  [l2]
+  loss_weighting_function: [linear]
 
 super_resolution: False
 multi_resolution: False

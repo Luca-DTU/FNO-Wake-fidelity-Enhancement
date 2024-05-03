@@ -305,6 +305,60 @@ class Trainer:
 
         return errors
 
+def linear(diff: torch.tensor,*args,**kwargs):
+    weights = torch.linspace(0,1,diff.shape[0],device=diff.device)
+    # reshape to shape of diff
+    weights = weights.unsqueeze(1).repeat(1, diff.shape[1])
+    return weights
+
+def axial_bump(diff: torch.Tensor, *args, **kwargs):
+    # Determine the shape of the input tensor
+    rows, cols = diff.shape # x,y
+    # Generate a linear space from -1 to 1, centered at 0
+    y = torch.linspace(-1, 1, cols, device=diff.device)
+    # Calculate k assuming tanh(k*1^2) ~ 0.5 at the borders (y = -1 or 1)
+    # k = tanh^-1(0.5) 
+    k = torch.atanh(torch.tensor(0.5, device=diff.device))
+    # Compute the weights using broadcasting. No need to loop over each element
+    weights = 1 - torch.tanh(k * y**2)
+    # Reshape and repeat the weights to match the dimensions of 'diff'
+    weights = weights.unsqueeze(0).repeat(rows, 1)
+    return weights
+
+def center_sink(diff: torch.Tensor, *args, **kwargs):
+    center = diff.shape[-1]//2
+    x_0, y_0 = center, center
+    rows, cols = diff.shape
+    ratio = cols/rows
+    x, y = torch.meshgrid(torch.linspace(-1, 1, rows, device=diff.device),
+                          torch.linspace(-ratio, ratio, cols, device=diff.device),
+                            indexing='ij')
+    # adapt x_0 and y_0 to the range [-1, 1]
+    x_0 = -1 + 2 * x_0 / rows
+    y_0 = -1 + 2 * y_0 / cols
+    c = 0.95 # desired value at the y boundaries
+    k = c/((1-c)*(ratio - y_0)**2)
+    # Calculate the weights matrix
+    weights = 1 - 1 / (k * ((x - x_0)**2 + (y - y_0)**2) + 1)
+    return weights
+class weightedLpLoss(LpLoss):
+    """ Applies weights to the LpLoss, the weight function is passed as a list of functions,
+    if the list has more than one function, the weights are multiplied elementwise."""
+    def __init__(self,weight_fun: list = [linear],*args,**kwargs):
+        super().__init__()
+        self.weight_fun = weight_fun
+
+    def rel(self, x, y):
+        diff = torch.norm(x-y,p = self.p,dim=[0,1])
+        ynorm = torch.norm(y,p = self.p,dim=[0,1])
+        diff = diff/ynorm
+        # apply weights
+        weights = [weight_fun(diff) for weight_fun in self.weight_fun]
+        weights = torch.stack(weights)
+        weights = torch.prod(weights,axis=0)
+        diff = diff*weights
+        diff = torch.mean(diff)
+        return diff
 
 
 class MultiResTrainer(Trainer):

@@ -13,9 +13,8 @@ data_format:
   encode_input: True
 # multi_resolution: True
 TFNO : 
-  non_linearity : sigmoid #gelu # use same capitalisation as torch.nn.functional
-
-
+  non_linearity : tanh #gelu # use same capitalisation as torch.nn.functional
 
 train:
   loss: weightedL2
+  loss_weighting_function: [linear, axial_bump, center_sink]

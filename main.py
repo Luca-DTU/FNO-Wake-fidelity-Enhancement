@@ -2,7 +2,8 @@ import numpy as np
 import torch
 from neuralop.models import TFNO
 # from neuralop import Trainer
-from src.trainer import Trainer, MultiResTrainer
+import src.trainer
+from src.trainer import Trainer, MultiResTrainer, weightedLpLoss
 from neuralop import LpLoss, H1Loss
 from neuralop.training.callbacks import Callback
 from src.utils import data_format, data_format_multi_resolution
@@ -20,15 +21,6 @@ from neuralop.utils import count_model_params
 import pickle
 from neuralop.datasets.data_transforms import MGPatchingDataProcessor
 
-class weightedLpLoss(LpLoss):
-    def rel(self, x, y):
-        diff = torch.norm(x-y,p = self.p,dim=[0,1,3])
-        ynorm = torch.norm(y,p = self.p,dim=[0,1,3])
-        diff = diff/ynorm
-        # linearly increasing weights from zero to one
-        weights = torch.linspace(0,1,diff.shape[0],device=diff.device)
-        diff = diff*weights
-        return diff
 
 
 def main(config):
@@ -57,7 +49,8 @@ def main(config):
         scheduler = getattr(torch.optim.lr_scheduler, config.scheduler.name)(optimizer, **config.scheduler.args)
         l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
         h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
-        weightedL2Loss = weightedLpLoss() # no flexibility, init aeguments are not doing anything
+        weight_fun = [getattr(src.trainer,weighting) for weighting in config.train.loss_weighting_function]
+        weightedL2Loss = weightedLpLoss(weight_fun=weight_fun) 
         losses = {'l2': l2loss, 'h1': h1loss,"weightedL2":weightedL2Loss}
         train_loss = losses[config.train.loss]
         eval_losses = {key: losses[key] for key in config.train.test_loss}
