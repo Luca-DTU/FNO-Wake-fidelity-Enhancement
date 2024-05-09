@@ -1,0 +1,26 @@
+WRITING:
+ - Abstract, preface, acknowledgements
+ - Fulfil Learning objectives fully for the 12:
+   - Talk about societal impact and sustainability also of the neural network training and compute, 
+   maybe this helps(https://www.nature.com/articles/s43588-023-00506-2)
+ - Add a mathematical description of the Tucker factorization
+STRUCTURING:
+ - Strcuture the value proposition along the two parallel developments:
+    - Data-driven surrogate model
+    - Fidelity enhancement model 
+
+DEVELOPMENT:
+ - Demonstrate the inference speed of the FNO
+ - Test on two outputs 
+ - Test with another input parameter
+ - Fine tune the FNO on a completely different low res example and see how it performs in high res
+ - Can I make the network smaller without losing performance
+ - Try with a different ambient turbulence
+ - Evaluate not only as function of angle but also of layout number, 
+ noting that layout is structured in a way that you repeat the 10 layouts at five different spacings,
+ you can plt it in a heatmap to show eventual dependencies
+
+
+
+OTHER NOTES:
+ - To apply in practice, you want to create a surrogate which takes into account the parameters as input

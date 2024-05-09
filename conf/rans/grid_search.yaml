@@ -41,4 +41,4 @@ hydra:
       train.loss_weighting_function: choice([linear],[axial_bump],[center_sink], 
                                             [linear,axial_bump],[linear,center_sink],
                                             [axial_bump,center_sink],
-                                            [linear,axial_bump,center_sink])
+                                            [linear,axial_bump,center_sink],[])

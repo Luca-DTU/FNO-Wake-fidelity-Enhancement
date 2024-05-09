@@ -355,10 +355,12 @@ if __name__ == "__main__":
     #                 inputs = ["Fx"])
 
 
-    inflow_wind_directions = [270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0]
+    # inflow_wind_directions = [270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0]
+    inflow_wind_directions = [270.0, 280.0, 290.0, 300.0, 310.0]
     investigate_angles(path = "data/RANS_Newton/",
                     horizontal_grid_spacing = [2.0],
-                    inflow_wind_direction = inflow_wind_directions, outputs = ['U'], layout_type = [27],
+                    inflow_wind_direction = inflow_wind_directions, outputs = ['U'], layout_type = [28],
                     inputs = ["Fx"])
+    
 
 

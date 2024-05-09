@@ -64,10 +64,12 @@ def analyse_multirun(path, log_file_name, target_measure, column_names=None):
 if __name__ == "__main__":
     # Define the path to the directory containing the subfolders
     # path = "multirun/2024-04-26/17-08-59"
-    path = "multirun/2024-05-01/18-21-02"
+    # path = "multirun/2024-05-01/18-21-02"
+    # path = "multirun/2024-05-03/16-36-21"
+    path = "multirun/2024-05-04/14-23-56"
     # path = "multirun/2024-04-27/15-16-35"
     df = analyse_multirun(path, "main.log", "Test loss: {'l2'", 
-                          column_names=["Layers","Batch Size", "Activation Function", "Loss type", "Test loss"]
+                        #   column_names=["Layers","Batch Size", "Activation Function", "Loss type", "Test loss"]
                           )
     print(df)
     print(df.to_latex(index = False,float_format="%.4f"))

@@ -50,7 +50,10 @@ def main(config):
         l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
         h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
         weight_fun = [getattr(src.trainer,weighting) for weighting in config.train.loss_weighting_function]
-        weightedL2Loss = weightedLpLoss(weight_fun=weight_fun) 
+        if not len(weight_fun):
+            weightedL2Loss = l2loss
+        else:
+            weightedL2Loss = weightedLpLoss(weight_fun=weight_fun) 
         losses = {'l2': l2loss, 'h1': h1loss,"weightedL2":weightedL2Loss}
         train_loss = losses[config.train.loss]
         eval_losses = {key: losses[key] for key in config.train.test_loss}

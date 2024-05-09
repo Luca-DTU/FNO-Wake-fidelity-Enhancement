@@ -357,7 +357,7 @@ class weightedLpLoss(LpLoss):
         weights = torch.stack(weights)
         weights = torch.prod(weights,axis=0)
         diff = diff*weights
-        diff = torch.mean(diff)
+        diff = torch.norm(diff,p = self.p,dim=[0,1])
         return diff
 
 
