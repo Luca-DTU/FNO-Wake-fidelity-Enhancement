@@ -362,7 +362,6 @@ class weightedLpLoss(LpLoss):
         diff = diff*weights
         diff = torch.norm(diff,p = self.p,dim=[0,1])
         return diff
-
 class linear_legacy(weightedLpLoss): 
     def rel(self, x, y):
         diff = torch.norm(x-y,p = self.p,dim=[0,1,3])
@@ -372,9 +371,6 @@ class linear_legacy(weightedLpLoss):
         weights = torch.linspace(0,1,diff.shape[0],device=diff.device)
         diff = diff*weights
         return diff
-
-
-
 class MultiResTrainer(Trainer):
     def __init__(self, *, 
                  model, 
@@ -592,3 +588,33 @@ class MultiResTrainer(Trainer):
                 self.callbacks.on_epoch_end(epoch=epoch, train_err=train_err, avg_loss=avg_loss)
 
         return errors
+
+
+if __name__ == "__main__":
+    from matplotlib import pyplot as plt
+    diff = torch.zeros(233,109)
+    weightings = [linear,axial_bump,center_sink]
+    weights = [weight_fun(diff) for weight_fun in weightings]
+    # pick a sample and plot
+    fig, ax = plt.subplots(2,len(weightings)+1,figsize=(6,6))
+    # plot with colorbar for each axis
+    for i,weight in enumerate(weights):
+        im = ax[0,i].imshow(weight,vmin=0, vmax=1)
+        # ax[i].set_title(weight_fun.__name__)
+    # perumations
+    im = ax[1,0].imshow(weights[0]*weights[1],vmin=0, vmax=1)
+    im = ax[1,1].imshow(weights[0]*weights[2],vmin=0, vmax=1)
+    im = ax[1,2].imshow(weights[1]*weights[2],vmin=0, vmax=1)
+    im = ax[1,3].imshow(weights[0]*weights[1]*weights[2],vmin=0, vmax=1)
+
+    # Remove the last subplot axis if not used
+    ax[0, -1].remove()
+    
+    # remove ticks
+    for a in ax.flatten():
+        a.set_xticks([])
+        a.set_yticks([])
+    plt.tight_layout()
+    cbar_ax = fig.add_axes([0.75, 0.51, 0.03, 0.465])  # Modify these values as needed
+    fig.colorbar(im, cax=cbar_ax)
+    plt.show()
