@@ -125,3 +125,11 @@ if __name__ == "__main__":
     shape_error.plot(kind='bar')
     plt.xlabel("Shape")
     plt.ylabel("Mean L2 test loss")
+
+    plt.imshow(loss_df.values)
+    plt.xlabel("Wind direction")
+    plt.ylabel("Layout type")
+    plt.xticks(range(len(loss_df.columns)), loss_df.columns, rotation=90)
+    plt.yticks(range(len(loss_df.index)), loss_df.index)
+    plt.colorbar()
+    
