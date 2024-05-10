@@ -21,6 +21,38 @@ from neuralop.utils import count_model_params
 import pickle
 from neuralop.datasets.data_transforms import MGPatchingDataProcessor
 
+def model_setup(config,input_channels,out_channels, super_resolution=False, out_size=(None,None)):
+    if "non_linearity" in config.TFNO:
+        non_linearity = getattr(torch.nn.functional, config.TFNO.non_linearity) 
+        kwargs = OmegaConf.to_container(config.TFNO)
+        kwargs["non_linearity"] = non_linearity
+    else:
+        kwargs = OmegaConf.to_container(config.TFNO)
+    if super_resolution:
+        model = SuperResolutionTFNO(**kwargs,
+                    in_channels=input_channels, out_channels=out_channels, out_size=out_size)
+    else:
+        model = TFNO(**kwargs,
+                    in_channels=input_channels, out_channels=out_channels)
+    model = model.to(device)
+    optimizer = torch.optim.Adam(model.parameters(), 
+                                    lr=config.adam.lr, 
+                                    weight_decay=config.adam.weight_decay)
+    scheduler = getattr(torch.optim.lr_scheduler, config.scheduler.name)(optimizer, **config.scheduler.args)
+    l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
+    h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
+    weight_fun = [getattr(src.trainer,weighting) for weighting in config.train.loss_weighting_function]
+    if not len(weight_fun):
+        weightedL2Loss = l2loss
+    else:
+        weightedL2Loss = weightedLpLoss(weight_fun=weight_fun) 
+    losses = {'l2': l2loss, 'h1': h1loss,"weightedL2":weightedL2Loss}
+    train_loss = losses[config.train.loss]
+    eval_losses = {key: losses[key] for key in config.train.test_loss}
+    return model, optimizer, scheduler, train_loss, eval_losses
+class LogLoss(Callback):
+    def on_epoch_end(self,epoch, train_err, avg_loss):
+        log.info(f"Epoch {epoch}, train error: {train_err}")
 
 
 def main(config):
@@ -29,39 +61,6 @@ def main(config):
     test_args = config.data_source.train_args
     test_args.update(config.data_source.test_args)
     x_test,y_test = data_source.extract(**test_args)
-    def model_setup(config,input_channels,out_channels, super_resolution=False, out_size=(None,None)):
-        if "non_linearity" in config.TFNO:
-            non_linearity = getattr(torch.nn.functional, config.TFNO.non_linearity) 
-            kwargs = OmegaConf.to_container(config.TFNO)
-            kwargs["non_linearity"] = non_linearity
-        else:
-            kwargs = OmegaConf.to_container(config.TFNO)
-        if super_resolution:
-            model = SuperResolutionTFNO(**kwargs,
-                     in_channels=input_channels, out_channels=out_channels, out_size=out_size)
-        else:
-            model = TFNO(**kwargs,
-                        in_channels=input_channels, out_channels=out_channels)
-        model = model.to(device)
-        optimizer = torch.optim.Adam(model.parameters(), 
-                                        lr=config.adam.lr, 
-                                        weight_decay=config.adam.weight_decay)
-        scheduler = getattr(torch.optim.lr_scheduler, config.scheduler.name)(optimizer, **config.scheduler.args)
-        l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
-        h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
-        weight_fun = [getattr(src.trainer,weighting) for weighting in config.train.loss_weighting_function]
-        if not len(weight_fun):
-            weightedL2Loss = l2loss
-        else:
-            weightedL2Loss = weightedLpLoss(weight_fun=weight_fun) 
-        losses = {'l2': l2loss, 'h1': h1loss,"weightedL2":weightedL2Loss}
-        train_loss = losses[config.train.loss]
-        eval_losses = {key: losses[key] for key in config.train.test_loss}
-        return model, optimizer, scheduler, train_loss, eval_losses
-    class LogLoss(Callback):
-        def on_epoch_end(self,epoch, train_err, avg_loss):
-            log.info(f"Epoch {epoch}, train error: {train_err}")
-
     if config.multi_resolution:
         train_loader, test_loader, data_processors = data_format_multi_resolution(x_train,y_train,x_test,y_test,
                                                             batch_size = config.train.batch_size,
@@ -168,7 +167,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf/rans", config_name="grid_search",version_base=None)
+@hydra.main(config_path="conf/rans", config_name="lightweight",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")
