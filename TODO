@@ -4,6 +4,9 @@ WRITING:
    - Talk about societal impact and sustainability also of the neural network training and compute, 
    maybe this helps(https://www.nature.com/articles/s43588-023-00506-2)
  - Add a mathematical description of the Tucker factorization
+ - Update implementation section
+ - If we have an accurate mapping between F_wf and U does that mean that we can generalize the fno to any wind speed? could we test it?
+ - Add some description of the losses and loss weighting
 STRUCTURING:
  - Strcuture the value proposition along the two parallel developments:
     - Data-driven surrogate model

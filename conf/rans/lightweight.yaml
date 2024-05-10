@@ -17,7 +17,8 @@ train:
   epochs: 1
   batch_size: 25
   test_batch_size: 50
-  loss: h1
+  loss: weightedL2
+  loss_weighting_function : [linear_legacy]
   test_loss: [l2,h1]
 
 data_source:

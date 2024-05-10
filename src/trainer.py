@@ -349,6 +349,9 @@ class weightedLpLoss(LpLoss):
         self.weight_fun = weight_fun
 
     def rel(self, x, y):
+        if len(self.weight_fun) == 1 and self.weight_fun[0].__name__ == "linear_legacy":
+            ll = linear_legacy(self.weight_fun)
+            return ll.rel(x,y)
         diff = torch.norm(x-y,p = self.p,dim=[0,1])
         ynorm = torch.norm(y,p = self.p,dim=[0,1])
         diff = diff/ynorm
@@ -359,6 +362,17 @@ class weightedLpLoss(LpLoss):
         diff = diff*weights
         diff = torch.norm(diff,p = self.p,dim=[0,1])
         return diff
+
+class linear_legacy(weightedLpLoss): 
+    def rel(self, x, y):
+        diff = torch.norm(x-y,p = self.p,dim=[0,1,3])
+        ynorm = torch.norm(y,p = self.p,dim=[0,1,3])
+        diff = diff/ynorm
+        # linearly increasing weights from zero to one
+        weights = torch.linspace(0,1,diff.shape[0],device=diff.device)
+        diff = diff*weights
+        return diff
+
 
 
 class MultiResTrainer(Trainer):
