@@ -15,7 +15,7 @@ from neuralop.models import TFNO
 from src.utils import SuperResolutionTFNO
 # model_folder ="outputs/2024-04-15/15-22-31" # super resolution
 # model_folder = "multirun/2024-04-01/08-55-46/9" # base case
-model_folder = "multirun/2024-04-27/15-16-35/8" # baest multi-res
+model_folder = "multirun/2024-05-11/12-37-11/7" # baest multi-res
 config_path = model_folder+"/.hydra/config.yaml"
 model_path = os.path.join(model_folder,"model.pth")
 data_processor_path = os.path.join(model_folder,"data_processors.pkl")
@@ -30,6 +30,7 @@ data_source = getattr(data_loading, config.data_source.name)()
 ###
 test_args = config.data_source.train_args
 test_args.update(config.data_source.test_args)
+test_args.update({"inflow_wind_direction": [315.0], "layout_type": [12]})
 x_test,y_test = data_source.extract(**test_args)
 # load model
 if config.data_format.positional_encoding:

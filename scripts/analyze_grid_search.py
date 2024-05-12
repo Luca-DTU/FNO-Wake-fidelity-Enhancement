@@ -66,10 +66,11 @@ if __name__ == "__main__":
     # path = "multirun/2024-04-26/17-08-59"
     # path = "multirun/2024-05-01/18-21-02"
     # path = "multirun/2024-05-03/16-36-21"
-    path = "multirun/2024-05-04/14-23-56"
+    # path = "multirun/2024-05-04/14-23-56"
+    # path = "multirun/2024-05-10/13-50-57"
     # path = "multirun/2024-04-27/15-16-35"
-    df = analyse_multirun(path, "main.log", "Test loss: {'l2'", 
-                        #   column_names=["Layers","Batch Size", "Activation Function", "Loss type", "Test loss"]
+    path = "multirun/2024-05-11/12-37-11"
+    df = analyse_multirun(path, "main.log", "Test loss: {'l2'"
                           )
     print(df)
     print(df.to_latex(index = False,float_format="%.4f"))
