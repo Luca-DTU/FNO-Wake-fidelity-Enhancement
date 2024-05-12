@@ -1,0 +1,13 @@
+WRITING:
+ - Abstract, preface, acknowledgements
+ - Talk about societal impact and sustainability also of the neural network training and compute, 
+  maybe this helps(https://www.nature.com/articles/s43588-023-00506-2)
+ - Update implementation section
+ - put plots of losses
+ - discuss the inference speed of the FNO
+
+DEVELOPMENT:
+ - Test on two outputs 
+ - Test with another input parameter (CT, Ambient Turbulence)
+ - Fine tune the FNO on a completely different low res example and see how it performs in high res
+ - Can I make the network smaller without losing performance? --> check sensitivity of test loss to network size
