@@ -3,7 +3,7 @@ TFNO:
   hidden_channels: 32
   # lifting_channels: 4
   # projection_channels: 4
-  n_layers: 8
+  n_layers: 12
   use_mlp: True
   preactivation: True
   fno_skip: 'soft-gating'
@@ -18,20 +18,20 @@ adam:
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [125,250,500]
-    gamma: 0.1
+    milestones: [50,100,150,200,250,500]
+    gamma: 0.5
 
 train:
-  epochs: 1000
-  batch_size: 256
-  test_batch_size: 50
-  loss: h1
+  epochs: 500
+  batch_size: 64
+  test_batch_size: 25
+  loss: weightedL2
   test_loss: [l2,h1]
   # test_loss:  [l2]
-  loss_weighting_function: [linear]
+  loss_weighting_function: [linear_legacy]
 
 super_resolution: False
-multi_resolution: False
+multi_resolution: True
 skip_errors: False
 
 data_format:
@@ -50,17 +50,15 @@ data_format:
 data_source:
   name: rans
   train_args:
+    inputs: [Fx]
     outputs: [U]
-    horizontal_grid_spacing: [2.0]
-    # inflow_wind_direction : [270.0, 290.0, 310.0] 
+    path: data/RANS_Newton/
+    horizontal_grid_spacing: [0.5,1.0,2.0]
     inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
                             300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
   test_args:
-    outputs: [U]
     horizontal_grid_spacing: [4.0]
-    # inflow_wind_direction : [270.0, 290.0, 310.0]
-    inflow_wind_direction : [270.0, 273.0, 276.0, 279.0, 282.0, 285.0, 288.0, 291.0, 294.0, 297.0,
-                            300.0, 303.0, 306.0, 309.0, 312.0, 315.0]
+
   evaluate_args:
     output_names: [U]
     plot : True

@@ -1,0 +1,15 @@
+defaults:
+  - base
+
+
+data_format:
+  encode_output: True
+
+
+data_source:
+  train_args:
+    outputs: [U,tke]
+  test_args:
+    outputs: [U,tke]
+  evaluate_args:
+    output_names: [U,tke]
