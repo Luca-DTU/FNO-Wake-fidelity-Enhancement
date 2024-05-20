@@ -1,15 +1,14 @@
 defaults:
   - base
 
-
-data_format:
-  encode_output: True
+train:
+  loss: l2
 
 
 data_source:
   train_args:
-    outputs: [U,tke]
+    outputs: [tke]
   test_args:
-    outputs: [U,tke]
+    outputs: [tke]
   evaluate_args:
-    output_names: [U,tke]
+    output_names: [tke]

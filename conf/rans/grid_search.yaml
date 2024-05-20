@@ -21,7 +21,7 @@ TFNO :
 scheduler:
   name : MultiStepLR
   args:
-    milestones: [50,100,150,200,250,500]
+    milestones: [50,100,150,200,250,300]
     gamma: 0.5
 
 train:
@@ -30,6 +30,7 @@ train:
   test_batch_size: 25
   loss: weightedL2
   test_loss: [l2,h1,weightedL2]
+  loss_weighting_function: [linear_legacy]
   # test_loss:  [l2]
 
 
@@ -38,8 +39,10 @@ hydra:
   mode : MULTIRUN
   sweeper:
     params:
-      TFNO.n_layers: choice(16,12,8)
-      train.loss_weighting_function: choice([linear],[linear_legacy])
-      train.epochs: choice(250,500)
+      TFNO.rank: choice(0.5, 0.7, 0.9)
+      TFNO.use_mlp: choice(True, False)
+      TFNO.preactivation: choice(True, False)
+      TFNO.fno_skip: choice('soft-gating', 'linear', 'identity')
+      
       
 

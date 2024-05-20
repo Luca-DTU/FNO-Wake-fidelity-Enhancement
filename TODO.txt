@@ -1,13 +1,18 @@
-WRITING:
- - Abstract, preface, acknowledgements
- - Talk about societal impact and sustainability also of the neural network training and compute, 
-  maybe this helps(https://www.nature.com/articles/s43588-023-00506-2)
- - Update implementation section
- - put plots of losses
- - discuss the inference speed of the FNO
+APPEARANCE:
+ - Code snippet in theory section yay or nay?
+ - Have configuration on its own page in the implementation section, make it a table maybe?
+ - Parameters table in the implementation section, modify it so that the font is bigger
+ - first figure in experiments section looks like shit
+CONTENT:
+ - SuperResolution, yes or no?, decide and update, abstract and introduction(problem statement) accordingly
+ - Thesis overview and novelty, to complete
+ - Review related work section, enhance clarity and remove gpt sounding sentences
+ - Keep losses section in implementation? yay or nay?
+ - More talk about the multi-resolution training, maybe a comparison with other approaches? 
+ see https://github.com/shib0li/MRA-FNO
+ - Restructure narrative in eperiments section, add more subsubsections in the rans awf part
 
-DEVELOPMENT:
- - Test on two outputs 
- - Test with another input parameter (CT, Ambient Turbulence)
- - Fine tune the FNO on a completely different low res example and see how it performs in high res
- - Can I make the network smaller without losing performance? --> check sensitivity of test loss to network size
+
+
+
+
