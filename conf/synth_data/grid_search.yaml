@@ -1,0 +1,8 @@
+defaults:
+  - base
+  - _self_
+hydra:
+  mode : MULTIRUN
+  sweeper:
+    params:
+      TFNO.non_linearity: choice(tanh, gelu)

@@ -1,5 +1,5 @@
 defaults:
-  - conf/rans/base
+  - _self_
 TFNO:
   n_modes: [12,12]
   hidden_channels: 24
@@ -13,6 +13,8 @@ TFNO:
   rank: 0.85
   joint_factorization: True
 
+super_resolution: False
+
 adam:
   lr: 0.01
   weight_decay: 0.00001
@@ -24,12 +26,13 @@ scheduler:
     gamma: 0.1
 
 train:
-  epochs: 1
-  batch_size: 25
+  epochs: 2000
+  batch_size: 256
   test_batch_size: 10
   loss: h1
   test_loss: [l2,h1]
   # test_loss:  [l2]
+  loss_weighting_function: []
 
 data_format:
   encode_input: True

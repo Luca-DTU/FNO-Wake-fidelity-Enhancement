@@ -58,7 +58,7 @@ class DataExtractor():
         y = y.detach().cpu().numpy()
         # plot
         if plot:
-            self.plot_output(output, y, titles = output_names, relative_postion_cross_section = 0.95,**kwargs)
+            self.plot_output(output, y, titles = output_names,**kwargs)
 
     
     def evaluate(self,test_loader, model,data_processor,losses,**kwargs):
@@ -248,6 +248,33 @@ class synthetic_data(DataExtractor):
                 x_list.append(x_train)
                 y_list.append(y_train)
             return x_list, y_list
+        
+    def plot_output(self,output, y, titles = ["U"], save = True):
+        for i in range(output.shape[1]): # output channels
+            fig, ax = plt.subplots(1,3,figsize=(11,3))
+            # fig.suptitle(f"{titles[i]}")
+            # Determine the common scale for the first two images
+            vmin = min(np.min(output[0, i]), np.min(y[0, i]))
+            vmax = max(np.max(output[0, i]), np.max(y[0, i]))
+
+            im = ax[0].imshow(output[0,i], vmin=vmin, vmax=vmax)
+            im = ax[1].imshow(y[0,i], vmin=vmin, vmax=vmax)
+            fig.colorbar(im, ax=ax[1], orientation='vertical', shrink=0.9)
+            im = ax[2].imshow(output[0,i]-y[0,i])
+            fig.colorbar(im, ax=ax[2], orientation='vertical', shrink=0.9)
+
+            ax[0].set_title("Predicted")
+            ax[1].set_title("True")
+            ax[2].set_title("Difference")
+            for a in ax:
+                a.set_xticks([])
+                a.set_yticks([])
+            plt.tight_layout()
+            if save:
+                plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/output_{titles[i]}.png")
+                plt.close()
+            else:
+                plt.show()
 
 def investigate_angles(*args, **kwargs):
     # investigate the ranges of the different datasets
