@@ -69,7 +69,8 @@ def main(config):
                                                             encode_input=config.data_format.encode_input,
                                                             positional_encoding=config.data_format.positional_encoding,
                                                             grid_boundaries=config.data_format.grid_boundaries,
-                                                            use_rans_encoder=config.data_format.use_rans_encoder
+                                                            use_rans_encoder=config.data_format.use_rans_encoder,
+                                                            multi_res_kwargs = config.multi_resolution
                                                             )
         if config.data_format.positional_encoding:
             input_channels = x_train[0].shape[1]+2
@@ -80,20 +81,13 @@ def main(config):
         model, optimizer, scheduler, train_loss, eval_losses = model_setup(config,input_channels,out_channels, config.super_resolution)
         log.info(f'\nOur model has {count_model_params(model)} parameters.')
         trainer = MultiResTrainer(model=model, n_epochs=config.train.epochs,
-                        device=device,
-                        data_processors=data_processors,
-                        wandb_log=False,
-                        log_test_interval=1, # log at every epoch
-                        use_distributed=False,
-                        verbose=True,
-                        callbacks=[LogLoss()]
-                        )
+                                  mode = config.multi_resolution.mode, device=device,
+                                  data_processors=data_processors, callbacks=[LogLoss()]
+                                  )
 
         trainer.train(train_loader=train_loader,
-                    test_loaders={"test":test_loader},
                     optimizer=optimizer,
                     scheduler=scheduler, 
-                    regularizer=False, 
                     training_loss=train_loss,
                     eval_losses=eval_losses,
                     )
@@ -167,7 +161,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf/synth_data", config_name="grid_search",version_base=None)
+@hydra.main(config_path="conf/rans", config_name="lightweight",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")

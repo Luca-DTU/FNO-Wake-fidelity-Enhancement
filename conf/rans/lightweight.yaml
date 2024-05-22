@@ -1,5 +1,6 @@
 defaults:
   - base
+  - _self_
 TFNO:
   n_modes: [4,4]
   hidden_channels: 4
@@ -23,9 +24,15 @@ train:
 
 data_source:
   train_args:
-    horizontal_grid_spacing: [0.5]
+    horizontal_grid_spacing: [0.5,1.0]
     inflow_wind_direction: [270.0, 290.0, 310.0]
   test_args:
-    horizontal_grid_spacing: [1.0]
+    horizontal_grid_spacing: [2.0]
     inflow_wind_direction: [270.0, 290.0, 310.0]
+
+multi_resolution: 
+  mode: batch_wise # i.e. Epoch - Batch - Resolution
+  # mode: epoch_wise # i.e. Epoch - Resolution - Batch
+  # mode: resolution_wise # i.e. Resolution - Epoch - Batch
+  shuffle : False
 

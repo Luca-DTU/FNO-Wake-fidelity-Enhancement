@@ -32,15 +32,23 @@ class DefaultDataProcessor(parentProcessor):
         return output, data_dict
 
 class MultiResolutionDataset(Dataset):
-    def __init__(self, X_set, y_set):
+    def __init__(self, X_set, y_set, shuffle= False, mode = "batch_wise"):
         assert len(X_set) == len(y_set), "Size mismatch between tensors"
-        self.n = len(X_set)
+        self.n = len(X_set) # number of resolutions
         if self.n > 1:
             for j in range(1,self.n):
                 assert X_set[j].size(0) == X_set[0].size(0), "Size mismatch between tensors"
                 assert y_set[j].size(0) == y_set[0].size(0), "Size mismatch between tensors"
+                if shuffle:
+                    idx = torch.randperm(X_set[j].size(0))
+                    X_set[j] = X_set[j][idx]
+                    y_set[j] = y_set[j][idx]
+
+
         self.X_set = X_set
         self.y_set = y_set
+        self.shuffle = shuffle
+        self.mode = mode
 
     def __getitem__(self, index):
         if self.n > 1:
@@ -60,7 +68,8 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
                 batch_size:int = 4,
                 test_batch_size:int = 4,
                 positional_encoding:bool = True,
-                use_rans_encoder:bool = True
+                use_rans_encoder:bool = True,
+                multi_res_kwargs:dict = {}
                 ):
 
     if encode_input:
@@ -91,6 +100,7 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
     train_db = MultiResolutionDataset(
         x_train,
         y_train,
+        **multi_res_kwargs
     )
 
     train_loader = torch.utils.data.DataLoader(
