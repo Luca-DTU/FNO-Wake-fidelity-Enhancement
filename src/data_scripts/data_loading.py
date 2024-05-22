@@ -130,7 +130,7 @@ class rans(DataExtractor):
             x_train = torch.tensor(x_train).float()
             y_train = torch.tensor(y_train).float()
             return x_train, y_train
-    def plot_output(self,output, y, titles = ["U"], save = True, relative_postion_cross_section = 0.8):
+    def plot_output(self,output, y, titles = ["U"], save = True, relative_position_cross_section = 0.8):
         for i in range(output.shape[1]): # output channels
             fig, ax = plt.subplots(1,4,figsize=(10,4))
             fig.suptitle(f"{titles[i]}")
@@ -143,8 +143,8 @@ class rans(DataExtractor):
             fig.colorbar(im, ax=ax[1], orientation='vertical', shrink=0.9)
             im = ax[2].imshow(output[0,i]-y[0,i])
             fig.colorbar(im, ax=ax[2], orientation='vertical', shrink=0.9)
-            ax[3].plot(y[0,i,int(relative_postion_cross_section*y.shape[2])], label = "True")
-            ax[3].plot(output[0,i,int(relative_postion_cross_section*output.shape[2])], label = "Predicted")
+            ax[3].plot(y[0,i,int(relative_position_cross_section*y.shape[2])], label = "True")
+            ax[3].plot(output[0,i,int(relative_position_cross_section*output.shape[2])], label = "Predicted")
             ax[3].legend(loc = "best",framealpha=0.3)
             ax[3].set_xticks([])
             # put y ticks on the right
@@ -158,7 +158,7 @@ class rans(DataExtractor):
                 a.set_xticks([])
                 a.set_yticks([])
                 # add horizontal line at relative position
-                a.axhline(int(relative_postion_cross_section*y.shape[2]), color='black', linestyle='--', linewidth=1)
+                a.axhline(int(relative_position_cross_section*y.shape[2]), color='black', linestyle='--', linewidth=1)
             plt.tight_layout()
             if save:
                 plt.savefig(f"{hydra.core.hydra_config.HydraConfig.get().runtime.output_dir}/output_{titles[i]}.png")

@@ -10,6 +10,7 @@ TFNO:
   factorization: 'tucker'
   rank: 0.85
   joint_factorization: True
+  non_linearity : tanh #gelu # use same capitalisation as torch.nn.functional
 
 adam:
   lr: 0.01
@@ -31,7 +32,12 @@ train:
   loss_weighting_function: [linear_legacy]
 
 super_resolution: False
-multi_resolution: True
+multi_resolution: 
+  mode: batch_wise # i.e. Epoch - Batch - Resolution
+  # mode: epoch_wise # i.e. Epoch - Resolution - Batch
+  # mode: resolution_wise # i.e. Resolution - Epoch - Batch
+  shuffle : False
+
 skip_errors: False
 
 data_format:
