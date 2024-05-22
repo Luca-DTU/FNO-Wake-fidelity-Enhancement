@@ -251,7 +251,7 @@ class synthetic_data(DataExtractor):
         
     def plot_output(self,output, y, titles = ["U"], save = True):
         for i in range(output.shape[1]): # output channels
-            fig, ax = plt.subplots(1,3,figsize=(11,3))
+            fig, ax = plt.subplots(1,3,figsize=(9,2.5))
             # fig.suptitle(f"{titles[i]}")
             # Determine the common scale for the first two images
             vmin = min(np.min(output[0, i]), np.min(y[0, i]))
@@ -390,4 +390,66 @@ if __name__ == "__main__":
                     inputs = ["Fx"])
     
 
+def generate_random_input(shape=(465,217), form = "circle"):
+    # zeros everywhere
+    x = torch.zeros(shape)
+    center = (shape[1]//2, shape[1]//2)
+    from scipy.ndimage import gaussian_filter
+    match form:
+        case "circle":
+            # make a circle
+            r  =  2000
+            tol = 100
+            for i in range(shape[0]):
+                for j in range(shape[1]):
+                    dist = (i-center[0])**2 + (j-center[1])**2
+                    if  dist > (r-tol) and dist < (r+tol):
+                        x[i,j] = -100
+            # smooth around the circle with a gaussian filter
+            
+            x = gaussian_filter(x, sigma=10)
+            plt.imshow(x)
+            plt.show()
+            x = torch.tensor(x)
+            return x.unsqueeze(0).unsqueeze(0).float()
+        case "x":
+            # make an x centered in the center
+            size = 50
+            for i in range(shape[0]):
+                for j in range(shape[1]):
+                    if (i+j == center[0]+center[1] or i-j == center[0]-center[1]) and i > center[0]-size and i < center[0]+size and j > center[1]-size and j < center[1]+size:
+                        x[i,j] = -100
+            x = gaussian_filter(x, sigma=10)
+            plt.imshow(x)
+            plt.show()
+            x = torch.tensor(x)
+            return x.unsqueeze(0).unsqueeze(0).float()
+        case "Capital Xi":
+            # make a capital xi from the greek alphabet Ξ, i.e. three horizontal lines, with the middle line being shorter
+            size_top_bottom = 70
+            size_middle = 40
+            distance = 40
+            # make middle line
+            i = center[0]
+            for j in range(shape[1]):
+                if j > center[1]-size_middle and j < center[1]+size_middle:
+                    x[i,j] = -100
+            # make top line
+            i = center[0]-distance
+            for j in range(shape[1]):
+                if j > center[1]-size_top_bottom and j < center[1]+size_top_bottom:
+                    x[i,j] = -100
+            # make bottom line
+            i = center[0]+distance
+            for j in range(shape[1]):
+                if j > center[1]-size_top_bottom and j < center[1]+size_top_bottom:
+                    x[i,j] = -100
+            x = gaussian_filter(x, sigma=10)
+            plt.imshow(x)
+            plt.show()
+            x = torch.tensor(x)
+            return x.unsqueeze(0).unsqueeze(0).float()
+        
 
+
+            

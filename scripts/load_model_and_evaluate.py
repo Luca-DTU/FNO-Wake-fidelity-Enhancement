@@ -15,8 +15,9 @@ from neuralop.models import TFNO
 from src.utils import SuperResolutionTFNO
 # model_folder ="outputs/2024-04-15/15-22-31" # super resolution
 # model_folder = "multirun/2024-04-01/08-55-46/9" # base case
-# model_folder = "multirun/2024-05-11/12-37-11/7" # baest multi-res
-model_folder = "outputs/2024-05-13/09-42-22" # unseen cases
+model_folder = "multirun/2024-05-11/12-37-11/7" # baest multi-res
+# model_folder = "outputs/2024-05-13/09-42-22" # unseen cases
+# model_folder = "multirun/2024-05-20/17-23-27/1" # synth_data
 config_path = model_folder+"/.hydra/config.yaml"
 model_path = os.path.join(model_folder,"model.pth")
 data_processor_path = os.path.join(model_folder,"data_processors.pkl")
