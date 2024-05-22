@@ -62,7 +62,7 @@ def main(config):
     test_args.update(config.data_source.test_args)
     x_test,y_test = data_source.extract(**test_args)
     if config.multi_resolution:
-        train_loader, test_loader, data_processors = data_format_multi_resolution(x_train,y_train,x_test,y_test,
+        train_loaders, test_loader, data_processors = data_format_multi_resolution(x_train,y_train,x_test,y_test,
                                                             batch_size = config.train.batch_size,
                                                             test_batch_size= config.train.test_batch_size,
                                                             encode_output=config.data_format.encode_output,
@@ -82,10 +82,11 @@ def main(config):
         log.info(f'\nOur model has {count_model_params(model)} parameters.')
         trainer = MultiResTrainer(model=model, n_epochs=config.train.epochs,
                                   mode = config.multi_resolution.mode, device=device,
-                                  data_processors=data_processors, callbacks=[LogLoss()]
+                                  data_processors=data_processors, callbacks=[LogLoss()],
+                                  config=config
                                   )
 
-        trainer.train(train_loader=train_loader,
+        trainer.train(train_loaders=train_loaders,
                     optimizer=optimizer,
                     scheduler=scheduler, 
                     training_loss=train_loss,
@@ -161,7 +162,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf/rans", config_name="lightweight",version_base=None)
+@hydra.main(config_path="conf/rans", config_name="grid_search",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")

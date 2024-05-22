@@ -378,7 +378,9 @@ class MultiResTrainer(Trainer):
                  data_processors=None,
                  callbacks = None,
                  log_test_interval=1, 
+                 config=None
                  ):
+        self.config = config
         if callbacks:
             assert type(callbacks) == list, "Callbacks must be a list of Callback objects"
             self.callbacks = PipelineCallback(callbacks=callbacks)
@@ -395,43 +397,87 @@ class MultiResTrainer(Trainer):
         self.data_processors = data_processors
         self.mode = mode
         
-    def batch_wise_training(self, train_loader, optimizer, scheduler, training_loss):
+    def training_loop(self,optimizer, training_loss, sample,num, train_err=0., avg_loss=0.):
+        optimizer.zero_grad(set_to_none=True)
+        if self.data_processors[num] is not None:
+            sample = self.data_processors[num].preprocess(sample)
+        else:
+            # load data to device if no preprocessor exists
+            sample = {k:v.to(self.device) for k,v in sample.items() if torch.is_tensor(v)}
+        out  = self.model(**sample)
+        if self.data_processors[num] is not None:
+            out, sample = self.data_processors[num].postprocess(out, sample)
+        loss = 0.
+        if isinstance(out, torch.Tensor):
+            loss = training_loss(out.float(), **sample)
+        elif isinstance(out, dict):
+            loss += training_loss(**out, **sample)
+        loss.sum().backward()
+        del out
+        optimizer.step()
+        train_err += loss.sum().item()
+        with torch.no_grad():
+            avg_loss += loss.sum().item()
+        return train_err, avg_loss
+    
+    def epoch_end_routine(self, epoch, train_err, avg_loss,scheduler):
+        if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+            scheduler.step(train_err)
+        else:
+            scheduler.step()
+        avg_loss  /= self.n_epochs
+        if self.callbacks:
+            self.callbacks.on_epoch_end(epoch=epoch, train_err=train_err, avg_loss=avg_loss)
+
+    def batch_wise_training(self, train_loaders, optimizer, scheduler, training_loss):
         for epoch in range(self.n_epochs):
             avg_loss = 0
             self.model.train()
-            train_err = 0.0
-            for idx, sample in enumerate(train_loader):
-                for num,resolved_sample in enumerate(sample):
-                    optimizer.zero_grad(set_to_none=True)
-                    if self.data_processors[num] is not None:
-                        resolved_sample = self.data_processors[num].preprocess(resolved_sample)
-                    else:
-                        # load data to device if no preprocessor exists
-                        resolved_sample = {k:v.to(self.device) for k,v in resolved_sample.items() if torch.is_tensor(v)}
-                    out  = self.model(**resolved_sample)
-                    if self.data_processors[num] is not None:
-                        out, resolved_sample = self.data_processors[num].postprocess(out, resolved_sample)
-                    loss = 0.
-                    if isinstance(out, torch.Tensor):
-                        loss = training_loss(out.float(), **resolved_sample)
-                    elif isinstance(out, dict):
-                        loss += training_loss(**out, **resolved_sample)
-                    loss.sum().backward()
-                    del out
-                    optimizer.step()
-                    train_err += loss.sum().item()
-                    with torch.no_grad():
-                        avg_loss += loss.sum().item()
-            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-                scheduler.step(train_err)
-            else:
-                scheduler.step()
-            train_err /= len(train_loader)
-            avg_loss  /= self.n_epochs
-            if self.callbacks:
-                self.callbacks.on_epoch_end(epoch=epoch, train_err=train_err, avg_loss=avg_loss)
-        
-    def train(self, train_loader, optimizer, scheduler,
+            train_err = 0.0       
+            for idx, (samples) in enumerate(zip(*train_loaders)):
+                for num,resolved_sample in enumerate(samples):
+                    train_err_local, avg_loss_local = self.training_loop(optimizer, 
+                                                             training_loss, 
+                                                             resolved_sample, 
+                                                             num)
+                    train_err += train_err_local
+                    avg_loss += avg_loss_local
+            self.epoch_end_routine(epoch, train_err, avg_loss,scheduler)
+
+    def resolution_wise_training(self, train_loaders, optimizer, scheduler, training_loss):
+        for epoch in range(self.n_epochs):
+            avg_loss = 0
+            self.model.train()
+            train_err = 0.0      
+            for num,train_loader in enumerate(train_loaders):
+                for idx, sample in enumerate(train_loader):
+                    train_err_local, avg_loss_local = self.training_loop(optimizer, 
+                                                             training_loss, 
+                                                             sample, 
+                                                             num)
+                    train_err += train_err_local
+                    avg_loss += avg_loss_local
+            self.epoch_end_routine(epoch, train_err, avg_loss,scheduler)
+                    
+    def epoch_wise_training(self, train_loaders, optimizer, scheduler, training_loss):
+        for num,train_loader in enumerate(train_loaders):
+            # reset scheduler for each resolution
+            scheduler = getattr(torch.optim.lr_scheduler, self.config.scheduler.name)(optimizer, **self.config.scheduler.args)
+            for epoch in range(self.n_epochs):
+                avg_loss = 0
+                self.model.train()
+                train_err = 0.0       
+                for idx, sample in enumerate(train_loader):
+                    train_err_local, avg_loss_local = self.training_loop(optimizer, 
+                                                             training_loss, 
+                                                             sample, 
+                                                             num)
+                    train_err += train_err_local
+                    avg_loss += avg_loss_local
+                self.epoch_end_routine(epoch, train_err, avg_loss,scheduler)
+
+
+    def train(self, train_loaders, optimizer, scheduler,
               training_loss=None, eval_losses=None):
         if training_loss is None:
             training_loss = LpLoss(d=2)
@@ -439,11 +485,11 @@ class MultiResTrainer(Trainer):
             eval_losses = dict(l2=training_loss)
         match self.mode:
             case "batch_wise":
-                self.batch_wise_training(train_loader, optimizer, scheduler, training_loss)
+                self.batch_wise_training(train_loaders, optimizer, scheduler, training_loss)
             case "epoch_wise":
-                self.epoch_wise_training(train_loader, optimizer, scheduler, training_loss)
+                self.epoch_wise_training(train_loaders, optimizer, scheduler, training_loss)
             case "resolution_wise":
-                self.resolution_wise_training(train_loader, optimizer, scheduler, training_loss)
+                self.resolution_wise_training(train_loaders, optimizer, scheduler, training_loss)
             case _:
                 raise ValueError(f"Invalid mode: {self.mode}")
 

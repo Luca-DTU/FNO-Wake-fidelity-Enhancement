@@ -97,20 +97,27 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
     else:
         output_encoders = [None for _ in y_train]
 
-    train_db = MultiResolutionDataset(
-        x_train,
-        y_train,
-        **multi_res_kwargs
-    )
+    train_dbs = [TensorDataset(
+        x_train[i],
+        y_train[i],
+    ) for i in range(len(x_train))]
 
-    train_loader = torch.utils.data.DataLoader(
-        train_db,
+    if multi_res_kwargs.shuffle:
+        # if true, samplers are different for each resolution
+        samplers = [torch.utils.data.RandomSampler(train_dbs[i]) for i in range(len(train_dbs))]
+    else: # if false, samplers are the same for each resolution
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        generators = [torch.Generator(device=device).manual_seed(42) for _ in range(len(train_dbs))]
+        samplers = [torch.utils.data.RandomSampler(train_dbs[i], generator=generators[i]) for i in range(len(train_dbs))]
+
+
+    train_loaders = [torch.utils.data.DataLoader(
+        train_dbs[i],
         batch_size=batch_size,
-        shuffle=True,
-        num_workers=0,
+        sampler = samplers[i],
         pin_memory=True,
-        persistent_workers=False,
-    )
+    ) for i in range(len(x_train))]
+
 
     test_db = TensorDataset(
         x_test,
@@ -135,7 +142,7 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
         positional_encoding=pos_encoding
     ) for i in range(len(x_train))]
 
-    return train_loader, test_loader, data_processors
+    return train_loaders, test_loader, data_processors
 
 class rans_custom_encoder(Transform):
     """Custom encoder for RANS data
