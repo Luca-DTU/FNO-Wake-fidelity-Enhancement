@@ -106,8 +106,7 @@ def data_format_multi_resolution(x_train:torch.tensor,y_train:torch.tensor,x_tes
         # if true, samplers are different for each resolution
         samplers = [torch.utils.data.RandomSampler(train_dbs[i]) for i in range(len(train_dbs))]
     else: # if false, samplers are the same for each resolution
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        generators = [torch.Generator(device=device).manual_seed(42) for _ in range(len(train_dbs))]
+        generators = [torch.Generator().manual_seed(42) for _ in range(len(train_dbs))]
         samplers = [torch.utils.data.RandomSampler(train_dbs[i], generator=generators[i]) for i in range(len(train_dbs))]
 
 
