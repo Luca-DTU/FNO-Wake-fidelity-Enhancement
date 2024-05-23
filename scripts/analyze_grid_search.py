@@ -70,7 +70,8 @@ if __name__ == "__main__":
     # path = "multirun/2024-05-10/13-50-57"
     # path = "multirun/2024-04-27/15-16-35"
     # path = "multirun/2024-05-11/12-37-11"
-    path = "multirun/2024-05-13/10-58-07"
+    # path = "multirun/2024-05-13/10-58-07"
+    path = "multirun/2024-05-22/21-52-30"
     df = analyse_multirun(path, "main.log", "Test loss: {'l2'"
                           )
     print(df)

@@ -10,8 +10,7 @@ multi_resolution:
   # mode: resolution_wise # i.e. Resolution - Epoch - Batch
   shuffle : False
 
-TFNO : 
-  non_linearity : tanh #gelu # use same capitalisation as torch.nn.functional
+
 
 ###
 hydra:
@@ -20,7 +19,7 @@ hydra:
     params:
       multi_resolution.mode: choice(batch_wise, epoch_wise, resolution_wise)
       multi_resolution.shuffle: choice(True, False)
-      train.batch_size: choice(16, 32, 64)
+      train.batch_size: choice(64,128)
 
 
 
