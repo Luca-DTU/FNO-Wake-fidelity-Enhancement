@@ -1,9 +1,0 @@
-
-CONTENT:
- - Review related work section, enhance clarity and remove gpt sounding sentences
- - how resolution invariant is the synthetic operator really?
- - L2 losses, make sense of the values and fix them if possible
-DEFENCE
-
-
-
