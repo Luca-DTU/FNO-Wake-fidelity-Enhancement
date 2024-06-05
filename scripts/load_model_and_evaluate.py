@@ -33,6 +33,9 @@ data_source = getattr(data_loading, config.data_source.name)()
 test_args = config.data_source.train_args
 test_args.update(config.data_source.test_args)
 # test_args.update({"inflow_wind_direction": [315.0], "layout_type": [12]})
+# test_args.update({"inflow_wind_direction": [291.0], "layout_type": [10]}) # best
+test_args.update({"inflow_wind_direction": [285.0], "layout_type": [2]}) # worst
+config.data_source.evaluate_args.update({"relative_position_cross_section" : 0.95})
 x_test,y_test = data_source.extract(**test_args)
 # load model
 if config.data_format.positional_encoding:
@@ -79,5 +82,6 @@ test_loader = torch.utils.data.DataLoader(
 if isinstance(data_processor, list):
     data_processor = data_processor[-1]
 data_processor = data_processor.to("cpu")
+
 
 test_loss = data_source.evaluate(test_loader,model,data_processor,losses=eval_losses,save = False, **config.data_source.evaluate_args)

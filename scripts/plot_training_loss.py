@@ -4,7 +4,8 @@ import re
 import os
 
 
-filepath = "multirun/2024-05-11/12-37-11/7/main.log"
+# filepath = "multirun/2024-05-11/12-37-11/7/main.log"
+filepath = "multirun/2024-05-23/12-16-54/0/main.log"
 # read the file
 with open(filepath, 'r') as f:
     lines = f.readlines()

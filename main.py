@@ -162,7 +162,7 @@ def main(config):
     return test_loss
 
 
-@hydra.main(config_path="conf/rans", config_name="grid_search",version_base=None)
+@hydra.main(config_path="conf/rans", config_name="base",version_base=None)
 def my_app(config):
     # Run the main function
     log.info(f"Running with config: {OmegaConf.to_yaml(config)}")

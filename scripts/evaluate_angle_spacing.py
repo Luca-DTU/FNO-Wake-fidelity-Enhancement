@@ -83,7 +83,7 @@ def evaluate_angle_spacing(model_folder = "multirun/2024-04-27/15-16-35/8"):
                 # eval losses
                 l2loss = LpLoss(d=2, p=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, p=2 is the L2 norm, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
                 h1loss = H1Loss(d=2,reduce_dims=[0,1]) # d=2 is the spatial dimension, reduce_dims=[0,1] means that the loss is averaged over the spatial dimensions 0 and 1
-                eval_losses = {'l2': l2loss, 'h1': h1loss}
+                eval_losses = {'l2': l2loss}
                 # test_batch_size = config.train.test_batch_size
                 test_batch_size = 1
             # dummy test loader

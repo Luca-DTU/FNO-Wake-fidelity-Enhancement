@@ -1,17 +1,9 @@
-APPEARANCE:
- - Code snippet in theory section yay or nay?
- - Have configuration on its own page in the implementation section, make it a table maybe?
- - first figure in experiments section looks like shit
+
 CONTENT:
- - SuperResolution, yes or no?, decide and update, abstract and introduction(problem statement) accordingly
- - Thesis overview and novelty, to complete
  - Review related work section, enhance clarity and remove gpt sounding sentences
- - Keep losses section in implementation? yay or nay?
- - More talk about the multi-resolution training, maybe a comparison with other approaches? like a compare with a fine tuning approaches
- - Give weight to the novelty aspects, i.e. the multifidelity training and the loss weighting, check schòler and al to see if he had removed the hub
- - Restructure narrative in eperiments section, add more subsubsections in the rans awf part
- - Show the application of the model to some new strange geometry
  - how resolution invariant is the synthetic operator really?
+ - L2 losses, make sense of the values and fix them if possible
+DEFENCE
 
 
 

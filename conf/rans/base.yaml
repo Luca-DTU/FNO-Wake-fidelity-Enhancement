@@ -36,7 +36,7 @@ multi_resolution:
   mode: batch_wise # i.e. Epoch - Batch - Resolution
   # mode: epoch_wise # i.e. Epoch - Resolution - Batch
   # mode: resolution_wise # i.e. Resolution - Epoch - Batch
-  shuffle : False
+  shuffle : True
 
 skip_errors: False
 
